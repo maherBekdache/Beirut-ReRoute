@@ -1,0 +1,31 @@
+[project]
+name = "beirut-reroute"
+version = "0.1.0"
+description = "AI-designed and simulated redesign of Beirut's feeder-and-trunk public transport network"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "geopandas>=1.0",
+    "osmnx>=2.0",
+    "networkx>=3.3",
+    "h3>=4.1",
+    "rasterio>=1.3",
+    "rasterstats>=0.20",
+    "simpy>=4.1",
+    "pulp>=2.9",
+    "ortools>=9.11",
+    "folium>=0.17",
+    "contextily>=1.6",
+    "shapely>=2.0",
+    "pyogrio>=0.10",
+    "matplotlib>=3.9",
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "requests>=2.32",
+    "tqdm>=4.66",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "jupyter>=1.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

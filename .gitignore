@@ -1,0 +1,22 @@
+.venv/
+__pycache__/
+*.pyc
+
+# Bulk downloaded/external raw data — regenerate via data_acquisition/ scripts,
+# don't vendor into git. ocftc_digitized/ is deliberately NOT listed here: it
+# holds hand-authored source data (ocftc_stops_manual.csv) worth tracking.
+data/raw/osm/
+data/raw/worldpop/
+data/raw/admin_boundaries/
+data/raw/lebanese_bus_routes/
+data/raw/ocftc_digitized/geocode_cache.json
+
+data/interim/
+data/processed/
+outputs/
+
+.ipynb_checkpoints/
+*.egg-info/
+.env
+cache/
+.pytest_cache/
