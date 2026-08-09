@@ -111,24 +111,52 @@ def build_qa_map() -> folium.Map:
             ).add_to(fg)
         fg.add_to(m)
 
-    b4_feeder_stops_path = settings.PROCESSED_DIR / "b4_feeder_stops.geojson"
-    b4_feeder_route_path = settings.PROCESSED_DIR / "b4_feeder_route.geojson"
-    if b4_feeder_stops_path.exists():
-        stops = gpd.read_file(b4_feeder_stops_path)
-        fg = folium.FeatureGroup(name="B4 MCLP-designed feeder stops")
-        for _, row in stops.iterrows():
-            folium.CircleMarker(
-                [row.geometry.y, row.geometry.x], radius=7, color="#000", weight=2,
-                fill=True, fill_color="#17becf",
-                tooltip=f"Feeder stop #{row['stop_rank']}",
-            ).add_to(fg)
-        if b4_feeder_route_path.exists():
-            route = gpd.read_file(b4_feeder_route_path)
-            folium.GeoJson(
-                route.geometry.iloc[0].__geo_interface__,
-                style_function=lambda _: {"color": "#17becf", "weight": 4},
-            ).add_to(fg)
-        fg.add_to(m)
+    all_feeder_stops_path = settings.PROCESSED_DIR / "feeder_stops_all_lines.geojson"
+    all_feeder_routes_path = settings.PROCESSED_DIR / "feeder_routes_all_lines.geojson"
+    if all_feeder_stops_path.exists():
+        feeder_stops = gpd.read_file(all_feeder_stops_path)
+        feeder_routes = gpd.read_file(all_feeder_routes_path) if all_feeder_routes_path.exists() else None
+        line_ids = sorted(feeder_stops["line_id"].unique())
+        palette = ["#17becf", "#e377c2", "#8c564b", "#bcbd22", "#7f7f7f", "#1a9850", "#762a83", "#fdae61", "#3288bd"]
+        for i, line_id in enumerate(line_ids):
+            color = palette[i % len(palette)]
+            fg = folium.FeatureGroup(name=f"MCLP feeder stops: {line_id}")
+            grp = feeder_stops[feeder_stops["line_id"] == line_id]
+            for _, row in grp.iterrows():
+                folium.CircleMarker(
+                    [row.geometry.y, row.geometry.x], radius=7, color="#000", weight=1.5,
+                    fill=True, fill_color=color,
+                    tooltip=f"{line_id} feeder stop #{row['stop_rank']}",
+                ).add_to(fg)
+            if feeder_routes is not None:
+                route_rows = feeder_routes[feeder_routes["line_id"] == line_id]
+                for _, r in route_rows.iterrows():
+                    folium.GeoJson(
+                        r.geometry.__geo_interface__,
+                        style_function=lambda _, c=color: {"color": c, "weight": 4},
+                    ).add_to(fg)
+            fg.add_to(m)
+    else:
+        # Fallback: single-line B4 proof-of-concept output, if the citywide
+        # all-lines run hasn't been produced yet.
+        b4_feeder_stops_path = settings.PROCESSED_DIR / "b4_feeder_stops.geojson"
+        b4_feeder_route_path = settings.PROCESSED_DIR / "b4_feeder_route.geojson"
+        if b4_feeder_stops_path.exists():
+            stops = gpd.read_file(b4_feeder_stops_path)
+            fg = folium.FeatureGroup(name="B4 MCLP-designed feeder stops")
+            for _, row in stops.iterrows():
+                folium.CircleMarker(
+                    [row.geometry.y, row.geometry.x], radius=7, color="#000", weight=2,
+                    fill=True, fill_color="#17becf",
+                    tooltip=f"Feeder stop #{row['stop_rank']}",
+                ).add_to(fg)
+            if b4_feeder_route_path.exists():
+                route = gpd.read_file(b4_feeder_route_path)
+                folium.GeoJson(
+                    route.geometry.iloc[0].__geo_interface__,
+                    style_function=lambda _: {"color": "#17becf", "weight": 4},
+                ).add_to(fg)
+            fg.add_to(m)
 
     folium.LayerControl(collapsed=False).add_to(m)
     return m
