@@ -136,6 +136,10 @@ def main() -> None:
     print(f"{n_assigned}/{len(assigned)} underserved cells assigned to a line "
           f"within {settings.T_RIDE_MAX_MIN} min ride time")
 
+    assignment_out_path = settings.PROCESSED_DIR / "underserved_line_assignment.geojson"
+    assigned.to_file(assignment_out_path, driver="GeoJSON")
+    print(f"Saved per-cell nearest-line assignment -> {assignment_out_path}")
+
     all_stops_out, all_routes_out = [], []
     total_newly_covered, total_uncovered_considered = 0.0, 0.0
 

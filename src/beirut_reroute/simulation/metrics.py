@@ -96,9 +96,14 @@ def compare(status_quo_summary: MetricsSummary, proposed_summary: MetricsSummary
             "proposed": proposed_summary.coverage_weighted_fraction,
         },
         {
+            # None means "no trips completed" (e.g. status quo with 0%
+            # coverage) -- must stay NaN, not 0, or a table reader would
+            # misread it as an instantaneous door-to-door trip.
             "metric": "avg_door_to_door_min (pop-weighted)",
-            "status_quo": (status_quo_summary.avg_door_to_door_weighted_s or 0) / 60,
-            "proposed": (proposed_summary.avg_door_to_door_weighted_s or 0) / 60,
+            "status_quo": status_quo_summary.avg_door_to_door_weighted_s / 60
+            if status_quo_summary.avg_door_to_door_weighted_s is not None else float("nan"),
+            "proposed": proposed_summary.avg_door_to_door_weighted_s / 60
+            if proposed_summary.avg_door_to_door_weighted_s is not None else float("nan"),
         },
         {
             "metric": "trunk_avg_speed_kmh",
