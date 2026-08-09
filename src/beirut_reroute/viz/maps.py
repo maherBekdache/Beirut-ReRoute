@@ -75,18 +75,28 @@ def build_qa_map() -> folium.Map:
     ocftc_path = settings.INTERIM_DIR / "ocftc_stops_geocoded.geojson"
     if ocftc_path.exists():
         ocftc = gpd.read_file(ocftc_path)
-        fg = folium.FeatureGroup(name="OCFTC B4 stops (geocoded, partial)")
-        coords = []
-        for _, row in ocftc.sort_values("stop_order").iterrows():
-            folium.CircleMarker(
-                [row.geometry.y, row.geometry.x], radius=5, color="#2ca02c",
-                fill=True, fill_color="#2ca02c",
-                tooltip=f"B4 #{row['stop_order']}: {row['stop_name']}",
-            ).add_to(fg)
-            coords.append([row.geometry.y, row.geometry.x])
-        if len(coords) > 1:
-            folium.PolyLine(coords, color="#2ca02c", weight=3, dash_array="6").add_to(fg)
-        fg.add_to(m)
+        has_qa_flag = "qa_flagged_suspect" in ocftc.columns
+        for line_id, grp in ocftc.groupby("line_id"):
+            grp = grp.sort_values("stop_order")
+            fg = folium.FeatureGroup(name=f"OCFTC {line_id} ({len(grp)} stops)")
+            coords = []
+            for _, row in grp.iterrows():
+                suspect = bool(row["qa_flagged_suspect"]) if has_qa_flag else False
+                is_fallback = row.get("matched_via") and row["matched_via"] != row["stop_name"]
+                color = "#d62728" if suspect else ("#ff7f0e" if is_fallback else "#2ca02c")
+                tooltip = f"{line_id} #{row['stop_order']}: {row['stop_name']}"
+                if suspect:
+                    tooltip += f" -- SUSPECT: {row.get('qa_flag_reason', '')}"
+                elif is_fallback:
+                    tooltip += f" (matched via fallback '{row['matched_via']}')"
+                folium.CircleMarker(
+                    [row.geometry.y, row.geometry.x], radius=5, color=color,
+                    fill=True, fill_color=color, tooltip=tooltip,
+                ).add_to(fg)
+                coords.append([row.geometry.y, row.geometry.x])
+            if len(coords) > 1:
+                folium.PolyLine(coords, color="#2ca02c", weight=2, dash_array="6", opacity=0.6).add_to(fg)
+            fg.add_to(m)
 
     folium.LayerControl(collapsed=False).add_to(m)
     return m
