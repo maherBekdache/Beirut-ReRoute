@@ -98,6 +98,38 @@ def build_qa_map() -> folium.Map:
                 folium.PolyLine(coords, color="#2ca02c", weight=2, dash_array="6", opacity=0.6).add_to(fg)
             fg.add_to(m)
 
+    status_quo_path = settings.PROCESSED_DIR / "status_quo_accessibility.geojson"
+    if status_quo_path.exists():
+        underserved = gpd.read_file(status_quo_path)
+        underserved = underserved[underserved["coverage_binary"] == 0]
+        fg = folium.FeatureGroup(name="Underserved cells (status quo, >30min to any stop)", show=False)
+        for _, row in underserved.iterrows():
+            folium.GeoJson(
+                row.geometry.__geo_interface__,
+                style_function=lambda _: {"color": "#9467bd", "weight": 1, "fillOpacity": 0.3},
+                tooltip=f"pop {row['population']:.0f}, {row['total_time_min']:.0f} min",
+            ).add_to(fg)
+        fg.add_to(m)
+
+    b4_feeder_stops_path = settings.PROCESSED_DIR / "b4_feeder_stops.geojson"
+    b4_feeder_route_path = settings.PROCESSED_DIR / "b4_feeder_route.geojson"
+    if b4_feeder_stops_path.exists():
+        stops = gpd.read_file(b4_feeder_stops_path)
+        fg = folium.FeatureGroup(name="B4 MCLP-designed feeder stops")
+        for _, row in stops.iterrows():
+            folium.CircleMarker(
+                [row.geometry.y, row.geometry.x], radius=7, color="#000", weight=2,
+                fill=True, fill_color="#17becf",
+                tooltip=f"Feeder stop #{row['stop_rank']}",
+            ).add_to(fg)
+        if b4_feeder_route_path.exists():
+            route = gpd.read_file(b4_feeder_route_path)
+            folium.GeoJson(
+                route.geometry.iloc[0].__geo_interface__,
+                style_function=lambda _: {"color": "#17becf", "weight": 4},
+            ).add_to(fg)
+        fg.add_to(m)
+
     folium.LayerControl(collapsed=False).add_to(m)
     return m
 

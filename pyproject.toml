@@ -22,6 +22,8 @@ dependencies = [
     "numpy>=1.26",
     "requests>=2.32",
     "tqdm>=4.66",
+    "scikit-learn>=1.5",
+    "scipy>=1.13",
 ]
 
 [project.optional-dependencies]
