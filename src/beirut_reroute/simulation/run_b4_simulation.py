@@ -106,8 +106,13 @@ def main() -> None:
 
     b4_vehicle = VehicleSpec(vehicle_id="B4_bus_1", edges=edge_plan)
 
-    sq_result = status_quo(sq_trip_specs, [b4_vehicle], signal_specs, sim_duration_s=7200)
-    prop_result = proposed(prop_trip_specs, [b4_vehicle], signal_specs, sim_duration_s=7200)
+    # Size the window off the actual trunk time + a generous buffer, rather
+    # than an arbitrary fixed duration -- see run_simulation_all_lines.py
+    # for why a too-short fixed window silently miscounts real completed
+    # trips as uncovered on long routes.
+    sim_duration_s = max(sq_trunk_time_s, proposed_trunk_time_s) * 1.5 + 3600
+    sq_result = status_quo(sq_trip_specs, [b4_vehicle], signal_specs, sim_duration_s=sim_duration_s)
+    prop_result = proposed(prop_trip_specs, [b4_vehicle], signal_specs, sim_duration_s=sim_duration_s)
 
     sq_summary = metrics.summarize(sq_result, edge_length_m, trip_weights)
     prop_summary = metrics.summarize(prop_result, edge_length_m, trip_weights)

@@ -28,6 +28,21 @@ def build_congested_drive_graph() -> nx.MultiDiGraph:
         raise FileNotFoundError(f"{graph_path} not found — run fetch_osm.py first.")
 
     G = ox.load_graphml(graph_path)
+
+    # The graph is weakly connected but not strongly connected: one-way
+    # streets can leave a node reachable FROM the rest of the network but
+    # unable to reach anything back out (e.g. a one-way slip lane clipped at
+    # the 15km extraction boundary) -- nx.shortest_path then fails with
+    # NetworkXNoPath between two otherwise-normal points. Only ~28/24674
+    # nodes (0.1%) are outside the largest strongly-connected component, so
+    # restricting to it is a safe fix, not a meaningful loss of coverage.
+    n_before = len(G.nodes)
+    G = ox.truncate.largest_component(G, strongly=True)
+    n_removed = n_before - len(G.nodes)
+    if n_removed:
+        print(f"Dropped {n_removed} nodes outside the largest strongly-connected "
+              f"component (one-way dead-ends unreachable from the rest of the network)")
+
     G = ox.add_edge_speeds(G)  # sets free-flow 'speed_kph' per edge
     G = ox.add_edge_travel_times(G)  # sets free-flow 'travel_time' (seconds)
 

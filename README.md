@@ -28,9 +28,18 @@ python -m venv .venv
 |---|---|---|
 | 1. Data acquisition & cleaning | `src/beirut_reroute/data_acquisition/` | real OSM/WorldPop/informal-route data pulled; 157/191 OCFTC stops geocoded (9/9 lines) |
 | 2. Zoning & accessibility scoring | `src/beirut_reroute/processing/`, `accessibility/` | done — status-quo baseline: 92.2% pop-weighted coverage (`run_status_quo.py`) |
-| 3. Feeder network optimization (MCLP) | `src/beirut_reroute/optimization/` | done for 7/9 real lines (`run_mclp_all_lines.py`) — 22 feeder stops, 67.2% of underserved population newly covered |
-| 4. Signal priority + simulation | `src/beirut_reroute/simulation/` | done for 5/7 lines (`run_simulation_all_lines.py`) on real routes + real OSM traffic signals; B3/B5 hit a directed-graph routing limitation (see below) |
+| 3. Feeder network optimization (MCLP) | `src/beirut_reroute/optimization/` | done for 7/9 real lines (`run_mclp_all_lines.py`) — 22 feeder stops, 68.4% of underserved population newly covered |
+| 4. Signal priority + simulation | `src/beirut_reroute/simulation/` | done for all 7/7 lines with a feeder network (`run_simulation_all_lines.py`) on real routes + real OSM traffic signals — citywide coverage 0%->91.9%, ~162min avg door-to-door for newly-connected riders |
 | 5. Visualization & reporting | `src/beirut_reroute/viz/`, `outputs/` | QA map done (`viz/maps.py`); final report/phased-action-plan not started |
+
+## Real results (as of 2026-08-09, all bugs below fixed)
+
+- **Status quo**: 92.2% population-weighted coverage (30min walk threshold), ~234,700 people uncovered.
+- **MCLP feeder design**: 22 stops across 7 lines (B1/B2 had no assignable underserved demand), 156,594/228,965 (68.4%) of underserved population newly covered.
+- **Simulation** (all 7 lines): citywide coverage 0%->91.9% for the population assigned to a feeder-served line; ~162min average door-to-door for newly-connected riders (pulled up by ML1's genuinely long ~4.4hr intercity trunk — not a bug, a real long-haul corridor).
+- **Trunk speed** (status quo -> proposed, per line — not blended citywide, corridors are too different to average meaningfully):
+  B3 36.8->37.8, B4 29.2->30.2, B5 39.3->39.5, ML3 29.0->29.2, ML4 37.8->37.9 km/h (small real signal-priority gains);
+  B6-ML2 and ML1 unchanged (41.0 / 31.6 km/h) because their chained routes contain zero real OSM traffic-signal nodes — priority has nothing to act on there.
 
 ## Known Limitations
 
@@ -42,38 +51,62 @@ python -m venv .venv
   individually simulated vehicles.
 - GBA boundary is currently a 15km radius around Beirut Central District (see
   `config/settings.py`), not a precise administrative polygon.
-- **Calibration check (2026-08-09):** the B4 simulation's status-quo trunk
-  travel time (Hadath -> Martyrs' Square) came out to 81.8 min, ~35% longer
-  than the ~60min "end-to-end" figure `transitapp.com` publishes for B4.
-  Free-flow (no congestion multiplier) would give ~49min — i.e. the real
-  figure sits between our free-flow and congested estimates, suggesting
+- **Calibration check:** the B4 simulation's status-quo trunk travel time
+  (Hadath -> Martyrs' Square) came out to 81.8 min, ~35% longer than the
+  ~60min "end-to-end" figure `transitapp.com` publishes for B4. Free-flow
+  (no congestion multiplier) would give ~49min — i.e. the real figure sits
+  between our free-flow and congested estimates, suggesting
   `CONGESTION_MULTIPLIER=0.6` is somewhat too aggressive for this corridor,
   or the shortest-path stop-chaining doesn't perfectly follow the real bus
   alignment, or the published figure is itself a scheduled/optimistic
-  estimate. Not re-tuned to force-match this one anecdotal figure (that
-  would be curve-fitting to a single data point) — needs more real
-  reference trip times before absolute travel-time numbers are trustworthy.
-  The signal-priority *delta* (same route, same base congestion assumption
-  in both scenarios) is less sensitive to this bias than the absolute times.
-- **Directed-graph routing gap (2026-08-09):** B3 and B5's trunk routes fail
-  to chain — `nx.shortest_path` found no *directed* path between two of
-  their consecutive real stops. The drive graph is weakly connected (no
-  disconnected islands) but not necessarily strongly connected: one-way
-  streets can make a stop unreachable in one direction even though it's
-  reachable in the other. Both lines are skipped cleanly (not silently
-  dropped or force-connected via an undirected fallback, which would risk a
-  physically-impossible route) rather than crashing the batch or reporting
-  wrong numbers. Consequence: the simulated citywide coverage improvement
-  (45.8%) is lower than the MCLP-only citywide figure (67.2%) purely
-  because B3/B5's newly-covered population isn't reflected in the
-  simulation run — not because those cells aren't genuinely coverable.
-  Proper fix needs graph-level work (e.g. rebuilding the drive graph
-  restricted to its largest strongly-connected component) rather than a
-  per-line patch.
-- Citywide trunk-speed is reported per-line, not blended into one number —
-  averaging km/h across corridors as different as a dense city line (B4)
-  and a mountain highway to the Bekaa (ML1) would obscure more than it
-  reveals. Per-line real result: B4 29.2->30.2, ML3 29.0->29.2, ML4
-  37.8->37.9 km/h (small real gains); B6-ML2 and ML1 unchanged at
-  41.0/32.4 km/h because their chained routes contain zero real OSM
-  traffic-signal nodes — signal priority has nothing to act on there.
+  estimate. Not re-tuned to force-match this one anecdotal figure — needs
+  more real reference trip times before absolute travel-time numbers are
+  fully trustworthy. The signal-priority *delta* (same route, same base
+  congestion assumption in both scenarios) is less sensitive to this bias
+  than the absolute times.
+
+### Bugs found and fixed while running this on real data (not caught by synthetic tests)
+
+Real data surfaces failure modes synthetic unit tests don't — each of these
+was found by an actual pipeline run producing an implausible or crashing
+result, not by inspection:
+
+1. **Directed-graph strong-connectivity.** The drive graph was weakly
+   connected but not strongly connected: ~28/24,674 nodes (one-way
+   dead-ends, mostly at the 15km extraction boundary) had zero out-degree,
+   causing `nx.shortest_path` to fail with `NetworkXNoPath` for two of B3's
+   and B5's real consecutive stops. Fixed by restricting the drive graph to
+   its largest strongly-connected component (`build_network_graph.py`) —
+   safe given it's only 0.1% of nodes.
+2. **Wrong-direction multi-source Dijkstra.** Both `nearest_stop_walk_times`
+   and `travel_time_to_each_line` used a "super-node -> stops -> Dijkstra"
+   trick to get distance-to-nearest-stop in one pass, but ran it on the
+   graph as-is — computing distance FROM the stop outward, not FROM each
+   point TO the stop. On a directed graph these differ; fixed by running
+   the trick on the *reversed* graph instead (see
+   `tests/test_directed_graph_distance.py` for a minimal repro). Didn't
+   change the walk-based accessibility number (pedestrian paths in OSM are
+   largely bidirectional even when one-way for vehicles) but materially
+   changed the drive-graph-based MCLP demand assignment (e.g. B4's assigned
+   demand went from 3 cells/14,984 people to 18 cells/64,803 once fixed).
+3. **Fixed 2-hour simulation window.** `env.run(until=7200)` was fine for
+   B4 (~80min trunk) but silently broke ML1 (~261min trunk alone) — any
+   trip including it never reached completion within the window, so
+   `trip.end_time` stayed `None` and a real, correctly-covered trip was
+   miscounted as "not covered" (citywide simulated coverage read 40.9%
+   instead of the correct 91.9%). Fixed by sizing the window per-line off
+   the line's own measured trunk time plus a buffer, not a fixed constant.
+4. **`env.run()` with no bound.** A helper that ran one trunk vehicle alone
+   to measure travel time called `env.run()` with no `until=`, but
+   `SignalizedIntersection` processes loop forever (fixed-time cycling
+   never stops on its own) — the simulation never terminated. Fixed by
+   running until the vehicle process itself completes.
+5. Assorted: WorldPop's `-99999` nodata sentinel leaking into population
+   sums for H3 cells overlapping the sea; an O(n²) candidate-downsampling
+   loop and an O(n²) MCLP coverage-set computation that never finished at
+   real data scale (fixed with a grid-snap dedup and a KD-tree
+   respectively); a Windows console `UnicodeEncodeError` crashing a
+   geocoding batch partway through combined with a cache that only saved
+   at the end (so the crash discarded already-completed, rate-limited API
+   calls); Nominatim query strings that hard-appended ", Beirut, Lebanon"
+   breaking matches for stops in Metn/Baabda/Chouf suburbs.

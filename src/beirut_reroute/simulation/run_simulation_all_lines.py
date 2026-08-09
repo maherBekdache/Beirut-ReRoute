@@ -115,9 +115,18 @@ def simulate_line(
         line_id, demand, feeder_stops, drive_graph, walk_graph, trunk_access_node, sq_trunk_s, prop_trunk_s
     )
 
+    # A fixed duration across every line is wrong: ML1's trunk alone is
+    # ~261min, well past a 2hr window some lines were originally tested
+    # with -- any trip including it would never reach env.run()'s cutoff,
+    # leaving trip.end_time=None and silently miscounting a real completed
+    # trip as "not covered". Size the window off the longest trunk time in
+    # this line's own two scenarios, with a generous buffer for walk/wait/
+    # feeder/transfer legs.
+    sim_duration_s = max(sq_trunk_s, prop_trunk_s) * 1.5 + 3600
+
     vehicle = VehicleSpec(vehicle_id=f"{line_id}_bus_1", edges=edge_plan)
-    sq_result = status_quo(sq_specs, [vehicle], signal_specs, sim_duration_s=7200)
-    prop_result = proposed(prop_specs, [vehicle], signal_specs, sim_duration_s=7200)
+    sq_result = status_quo(sq_specs, [vehicle], signal_specs, sim_duration_s=sim_duration_s)
+    prop_result = proposed(prop_specs, [vehicle], signal_specs, sim_duration_s=sim_duration_s)
 
     sq_summary = metrics.summarize(sq_result, edge_length_m, trip_weights)
     prop_summary = metrics.summarize(prop_result, edge_length_m, trip_weights)

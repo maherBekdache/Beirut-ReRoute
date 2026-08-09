@@ -35,6 +35,14 @@ def travel_time_to_each_line(
         graph, points.geometry.x.values, points.geometry.y.values
     )
 
+    # We want dist(point -> nearest stop of this line), i.e. a rider/feeder
+    # traveling FROM the point TO the trunk. The graph is directed (one-way
+    # streets), so that's not the same as dist(stop -> point). Reverse once
+    # up front (not per-line — that graph.copy() cost adds up across 9+
+    # lines) and use the super-node trick on the reversed graph: dist_rev
+    # (stop -> point) = dist(point -> stop) in the original graph.
+    G_rev = graph.reverse(copy=True)
+
     results = {}
     for line_id, line_stops in trunk_stops.groupby(line_col):
         stop_nodes = list(
@@ -44,14 +52,14 @@ def travel_time_to_each_line(
                 )
             )
         )
-        G = graph.copy()
         SUPER = f"__super_{line_id}__"
-        G.add_node(SUPER)
+        G_rev.add_node(SUPER)
         for n in stop_nodes:
-            G.add_edge(SUPER, n, travel_time=0.0)
-        lengths = nx.single_source_dijkstra_path_length(G, SUPER, weight="travel_time")
+            G_rev.add_edge(SUPER, n, travel_time=0.0)
+        lengths = nx.single_source_dijkstra_path_length(G_rev, SUPER, weight="travel_time")
         times_min = np.array([lengths.get(n, np.inf) for n in point_nodes]) / 60.0
         results[line_id] = times_min
+        G_rev.remove_node(SUPER)
 
     return pd.DataFrame(results, index=points.index)
 

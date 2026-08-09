@@ -58,7 +58,15 @@ def nearest_stop_walk_times(
     # one shortest path per cell; networkx doesn't expose multi-source
     # dijkstra with a travel_time weight directly, so we add a virtual
     # "super stop" node connected to every stop node with zero-cost edges.
-    G = walk_graph.copy()
+    #
+    # We want dist(cell -> nearest stop), i.e. distance FROM each cell TO a
+    # stop. The graph is directed (one-way streets), so that is NOT the same
+    # as dist(stop -> cell). Running Dijkstra from a super-node with edges
+    # super->stop over the graph as-is computes the latter (wrong direction).
+    # Fix: reverse the graph first, so dist_rev(stop -> cell) = dist(cell ->
+    # stop) in the original graph, then the same super-node trick gives the
+    # correct quantity.
+    G = walk_graph.reverse(copy=True)
     SUPER_STOP = "__super_stop__"
     G.add_node(SUPER_STOP)
     for n in stop_nodes:
