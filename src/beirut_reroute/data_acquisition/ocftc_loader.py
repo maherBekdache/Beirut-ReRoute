@@ -24,37 +24,23 @@ Usage:
 
 from __future__ import annotations
 
-import json
 import re
 import sys
-import time
 from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
-import requests
 from shapely.geometry import Point
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from config import settings
+from beirut_reroute.data_acquisition.geocoding import load_cache, query_nominatim, save_cache
 
 # Windows' default console codepage (cp1252) can't print some transliterated
 # place names; make stdout tolerant instead of crashing mid-batch.
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
-USER_AGENT = "beirut-reroute-lebnet-fellows-project (contact: maherbekdash05@gmail.com)"
 CACHE_PATH = settings.OCFTC_DIGITIZED_DIR / "geocode_cache.json"
-
-
-def _load_cache() -> dict:
-    if CACHE_PATH.exists():
-        return json.loads(CACHE_PATH.read_text())
-    return {}
-
-
-def _save_cache(cache: dict) -> None:
-    CACHE_PATH.write_text(json.dumps(cache, indent=2))
 
 
 def _gba_viewbox() -> str:
@@ -108,28 +94,6 @@ def _candidate_names(stop_name: str) -> list[str]:
     return unique
 
 
-def _nominatim_query(query: str, viewbox: str) -> tuple[float, float] | None:
-    resp = requests.get(
-        NOMINATIM_URL,
-        params={
-            "q": query,
-            "format": "json",
-            "limit": 1,
-            "countrycodes": "lb",
-            "viewbox": viewbox,
-            "bounded": 0,  # soft preference, not a hard filter
-        },
-        headers={"User-Agent": USER_AGENT},
-        timeout=15,
-    )
-    resp.raise_for_status()
-    time.sleep(1.0)  # Nominatim usage policy: max 1 req/s
-    results = resp.json()
-    if not results:
-        return None
-    return float(results[0]["lat"]), float(results[0]["lon"])
-
-
 def geocode(stop_name: str, viewbox: str, cache: dict) -> tuple[float, float, str] | None:
     """Returns (lat, lon, matched_query) — matched_query is kept in the output
     so a QA pass can tell at a glance which stops resolved via the exact name
@@ -141,21 +105,21 @@ def geocode(stop_name: str, viewbox: str, cache: dict) -> tuple[float, float, st
 
     for name_variant in _candidate_names(stop_name):
         for query in (name_variant, f"{name_variant}, Lebanon"):
-            result = _nominatim_query(query, viewbox)
+            result = query_nominatim(query, countrycodes="lb", viewbox=viewbox)
             if result is not None:
                 cache[cache_key] = [result[0], result[1], name_variant]
-                _save_cache(cache)  # incremental — survive a mid-batch crash
+                save_cache(CACHE_PATH, cache)  # incremental — survive a mid-batch crash
                 return result[0], result[1], name_variant
 
     cache[cache_key] = None
-    _save_cache(cache)
+    save_cache(CACHE_PATH, cache)
     return None
 
 
 def load_and_geocode_stops() -> gpd.GeoDataFrame:
     csv_path = settings.OCFTC_DIGITIZED_DIR / "ocftc_stops_manual.csv"
     stops = pd.read_csv(csv_path)
-    cache = _load_cache()
+    cache = load_cache(CACHE_PATH)
     viewbox = _gba_viewbox()
 
     lats, lons, resolved, matched_via = [], [], [], []

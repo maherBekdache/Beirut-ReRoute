@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_e6b4a75baf5f576f327afbf3b834252e {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+<div style="position: fixed; bottom: 24px; left: 24px; z-index: 9999;
+            background: white; padding: 10px 14px; border: 1px solid #999;
+            border-radius: 6px; font-size: 12px; line-height: 1.6; box-shadow: 0 1px 4px rgba(0,0,0,0.3);">
+  <b>Node kind</b><br>
+  <i class="fa fa-star" style="color:#d63e2a"></i> Beirut hub &nbsp;
+  <i class="fa fa-ship" style="color:#38aadd"></i> Port &nbsp;
+  <i class="fa fa-road" style="color:#72b026"></i> Inland hub<br>
+  <i class="fa fa-train" style="color:#f69730"></i> Rail junction &nbsp;
+  <i class="fa fa-flag" style="color:#d252b9"></i> Border crossing &nbsp;
+  <i class="fa fa-building" style="color:#575757"></i> City
+  <hr style="margin:6px 0;">
+  <b>Edge mode</b><br>
+  <span style="color:#1f78b4;">&#9644;&#9644;</span> Bus &nbsp;
+  <span style="color:#8B4513;">&#9644;&#9644;</span> Historic rail &nbsp;
+  <span style="color:#e31a1c;">&#9644;&#9644;</span> Rail<br>
+  <span style="color:#00b3b3;">&#9644;&#9644;</span> Ferry &nbsp;
+  <span style="color:#999999;">&#9644;&#9644;</span> Road
+  <hr style="margin:6px 0;">
+  Solid = status quo &nbsp;&mdash;&nbsp; dashed = proposed-only
+</div>
+    <div style="position: fixed; top: 12px; left: 60px; z-index: 9999; background: white; padding: 6px 14px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.3); font-size: 16px; font-weight: 600;">Lebanon ReConnect — national/regional network</div>
+    
+            <div class="folium-map" id="map_e6b4a75baf5f576f327afbf3b834252e" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_e6b4a75baf5f576f327afbf3b834252e = L.map(
+                "map_e6b4a75baf5f576f327afbf3b834252e",
+                {
+                    center: [0.0, 0.0],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 1,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_f13143a7cbe0299377c25c0cb3fae4e9 = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_f13143a7cbe0299377c25c0cb3fae4e9.addTo(map_e6b4a75baf5f576f327afbf3b834252e);
+        
+    
+            map_e6b4a75baf5f576f327afbf3b834252e.fitBounds(
+                [[33.8938, 35.5018], [34.4367, 35.8497], [33.9808, 35.6178], [33.5606, 35.3758], [33.2704, 35.2038], [33.8175, 35.8536], [34.0059, 36.2181], [33.85, 36.0167], [33.7167, 35.9833], [34.6333, 36.2333], [33.5138, 36.2765], [34.7324, 36.7137], [36.2021, 37.1343], [31.9539, 35.9106], [24.7136, 46.6753], [34.9182, 33.6291], [35.5317, 35.7915], [36.8, 34.6333]],
+                {"padding": [30, 30]}
+            );
+        
+    
+            var feature_group_a9ce0332b32e619c243a48523601ac8e = L.featureGroup(
+                {
+}
+            );
+        
+    
+            var poly_line_1a0ab9d4569f7dbc3f144bbd25482752 = L.polyline(
+                [[33.8938, 35.5018], [33.8175, 35.8536]],
+                {"bubblingMouseEvents": true, "color": "#1f78b4", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#1f78b4", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.9, "smoothFactor": 1.0, "stroke": true, "weight": 3.5}
+            ).addTo(feature_group_a9ce0332b32e619c243a48523601ac8e);
+        
+    
+        var popup_f6ac0cc56ff1616b07a17f7c1ffae76a = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_5bf5add0beb02e496cc7b257d9b87fad = $(`<div id="html_5bf5add0beb02e496cc7b257d9b87fad" style="width: 100.0%; height: 100.0%;"><b>Beirut ↔ Chtaura</b><br>mode: bus &middot; status: formal_2024_unconfirmed_operation &middot; 34 km<br><i>OCFTC ML1 -- real geocoded route already in this repo (data/raw/ocftc_digitized).</i><br>source: repo: ocftc_stops_manual.csv</div>`)[0];
+                popup_f6ac0cc56ff1616b07a17f7c1ffae76a.setContent(html_5bf5add0beb02e496cc7b257d9b87fad);
+            
+        
+
+        poly_line_1a0ab9d4569f7dbc3f144bbd25482752.bindPopup(popup_f6ac0cc56ff1616b07a17f7c1ffae76a)
+        ;
+
+        
+    
+    
+            poly_line_1a0ab9d4569f7dbc3f144bbd25482752.bindTooltip(
+                `<div>
+                     Beirut ↔ Chtaura (bus)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_834209d589520c048da157c71fc95651 = L.polyline(
+                [[33.8938, 35.5018], [34.4367, 35.8497]],
+                {"bubblingMouseEvents": true, "color": "#1f78b4", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#1f78b4", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.9, "smoothFactor": 1.0, "stroke": true, "weight": 3.5}
+            ).addTo(feature_group_a9ce0332b32e619c243a48523601ac8e);
+        
+    
+        var popup_351453a5f1bb09c549d2b197e8135d28 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_b61f5d6c3802ad861b9936991b9314c6 = $(`<div id="html_b61f5d6c3802ad861b9936991b9314c6" style="width: 100.0%; height: 100.0%;"><b>Beirut ↔ Tripoli</b><br>mode: bus &middot; status: formal_2024_unconfirmed_operation &middot; 68 km<br><i>OCFTC ML4 -- real geocoded route already in this repo, passes Jounieh/Byblos/Batroun.</i><br>source: repo: ocftc_stops_manual.csv</div>`)[0];
+                popup_351453a5f1bb09c549d2b197e8135d28.setContent(html_b61f5d6c3802ad861b9936991b9314c6);
+            
+        
+
+        poly_line_834209d589520c048da157c71fc95651.bindPopup(popup_351453a5f1bb09c549d2b197e8135d28)
+        ;
+
+        
+    
+    
+            poly_line_834209d589520c048da157c71fc95651.bindTooltip(
+                `<div>
+                     Beirut ↔ Tripoli (bus)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_6269076951f8e2934b227a77215f14ac = L.polyline(
+                [[33.8938, 35.5018], [33.9808, 35.6178]],
+                {"bubblingMouseEvents": true, "color": "#1f78b4", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#1f78b4", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.9, "smoothFactor": 1.0, "stroke": true, "weight": 3.5}
+            ).addTo(feature_group_a9ce0332b32e619c243a48523601ac8e);
+        
+    
+        var popup_bf8c7835855a77fa3391f4a7f02111c3 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_610141593651e0ccc72a65ae74db23f6 = $(`<div id="html_610141593651e0ccc72a65ae74db23f6" style="width: 100.0%; height: 100.0%;"><b>Beirut ↔ Jounieh</b><br>mode: bus &middot; status: formal_2024_unconfirmed_operation &middot; 14 km<br><i>Intermediate point on the real ML4 corridor.</i><br>source: repo: ocftc_stops_manual.csv</div>`)[0];
+                popup_bf8c7835855a77fa3391f4a7f02111c3.setContent(html_610141593651e0ccc72a65ae74db23f6);
+            
+        
+
+        poly_line_6269076951f8e2934b227a77215f14ac.bindPopup(popup_bf8c7835855a77fa3391f4a7f02111c3)
+        ;
+
+        
+    
+    
+            poly_line_6269076951f8e2934b227a77215f14ac.bindTooltip(
+                `<div>
+                     Beirut ↔ Jounieh (bus)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_d2dff66d72c750859b6e3f9e93d19eb5 = L.polyline(
+                [[33.8938, 35.5018], [33.5606, 35.3758]],
+                {"bubblingMouseEvents": true, "color": "#1f78b4", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#1f78b4", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.9, "smoothFactor": 1.0, "stroke": true, "weight": 3.5}
+            ).addTo(feature_group_a9ce0332b32e619c243a48523601ac8e);
+        
+    
+        var popup_a4f8ebee02ed2989d6baac7c84957514 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_0242823c073f688ec2f5ee77f51d89ef = $(`<div id="html_0242823c073f688ec2f5ee77f51d89ef" style="width: 100.0%; height: 100.0%;"><b>Beirut ↔ Saida</b><br>mode: bus &middot; status: formal_2024_unconfirmed_operation &middot; 39 km<br><i>Intermediate point on the real B6-ML2 corridor.</i><br>source: repo: ocftc_stops_manual.csv</div>`)[0];
+                popup_a4f8ebee02ed2989d6baac7c84957514.setContent(html_0242823c073f688ec2f5ee77f51d89ef);
+            
+        
+
+        poly_line_d2dff66d72c750859b6e3f9e93d19eb5.bindPopup(popup_a4f8ebee02ed2989d6baac7c84957514)
+        ;
+
+        
+    
+    
+            poly_line_d2dff66d72c750859b6e3f9e93d19eb5.bindTooltip(
+                `<div>
+                     Beirut ↔ Saida (bus)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_5c3ac5aacfdcb200b4fb0dddecc82ef9 = L.polyline(
+                [[33.8938, 35.5018], [33.2704, 35.2038]],
+                {"bubblingMouseEvents": true, "color": "#1f78b4", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#1f78b4", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.9, "smoothFactor": 1.0, "stroke": true, "weight": 3.5}
+            ).addTo(feature_group_a9ce0332b32e619c243a48523601ac8e);
+        
+    
+        var popup_cf7c55711a4e16265087dac3485686ec = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_c54987e5676ee746e050c069c91f341b = $(`<div id="html_c54987e5676ee746e050c069c91f341b" style="width: 100.0%; height: 100.0%;"><b>Beirut ↔ Tyre</b><br>mode: bus &middot; status: formal_2024_unconfirmed_operation &middot; 75 km<br><i>OCFTC B6-ML2 -- real geocoded route already in this repo.</i><br>source: repo: ocftc_stops_manual.csv</div>`)[0];
+                popup_cf7c55711a4e16265087dac3485686ec.setContent(html_c54987e5676ee746e050c069c91f341b);
+            
+        
+
+        poly_line_5c3ac5aacfdcb200b4fb0dddecc82ef9.bindPopup(popup_cf7c55711a4e16265087dac3485686ec)
+        ;
+
+        
+    
+    
+            poly_line_5c3ac5aacfdcb200b4fb0dddecc82ef9.bindTooltip(
+                `<div>
+                     Beirut ↔ Tyre (bus)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_ce1ba61f14473dc546c7a9c98fc22772 = L.polyline(
+                [[33.8175, 35.8536], [34.0059, 36.2181]],
+                {"bubblingMouseEvents": true, "color": "#999999", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#999999", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.9, "smoothFactor": 1.0, "stroke": true, "weight": 3.5}
+            ).addTo(feature_group_a9ce0332b32e619c243a48523601ac8e);
+        
+    
+        var popup_45cd61ef329437b2c06082f4803566bf = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_eb4de47524b70b424d04267cb0308569 = $(`<div id="html_eb4de47524b70b424d04267cb0308569" style="width: 100.0%; height: 100.0%;"><b>Chtaura ↔ Baalbek</b><br>mode: road &middot; status: informal_only &middot; 40 km<br><i>No formal transit reaches Baalbek today; private cars/informal vans only.</i><br></div>`)[0];
+                popup_45cd61ef329437b2c06082f4803566bf.setContent(html_eb4de47524b70b424d04267cb0308569);
+            
+        
+
+        poly_line_ce1ba61f14473dc546c7a9c98fc22772.bindPopup(popup_45cd61ef329437b2c06082f4803566bf)
+        ;
+
+        
+    
+    
+            poly_line_ce1ba61f14473dc546c7a9c98fc22772.bindTooltip(
+                `<div>
+                     Chtaura ↔ Baalbek (road)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_4105c8920e409250a1271c6a4fa7adf2 = L.polyline(
+                [[33.8175, 35.8536], [33.85, 36.0167]],
+                {"bubblingMouseEvents": true, "color": "#999999", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#999999", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.9, "smoothFactor": 1.0, "stroke": true, "weight": 3.5}
+            ).addTo(feature_group_a9ce0332b32e619c243a48523601ac8e);
+        
+    
+        var popup_be07ef70447318c3d7e599a59943f150 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_704acb5441770bd3e7e5d29e4b6e09ee = $(`<div id="html_704acb5441770bd3e7e5d29e4b6e09ee" style="width: 100.0%; height: 100.0%;"><b>Chtaura ↔ Rayak</b><br>mode: road &middot; status: informal_only &middot; 15 km<br><i>No formal transit; private cars/informal vans only.</i><br></div>`)[0];
+                popup_be07ef70447318c3d7e599a59943f150.setContent(html_704acb5441770bd3e7e5d29e4b6e09ee);
+            
+        
+
+        poly_line_4105c8920e409250a1271c6a4fa7adf2.bindPopup(popup_be07ef70447318c3d7e599a59943f150)
+        ;
+
+        
+    
+    
+            poly_line_4105c8920e409250a1271c6a4fa7adf2.bindTooltip(
+                `<div>
+                     Chtaura ↔ Rayak (road)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            feature_group_a9ce0332b32e619c243a48523601ac8e.addTo(map_e6b4a75baf5f576f327afbf3b834252e);
+        
+    
+            var feature_group_217f3418d22304570a95f3e153f6b04b = L.featureGroup(
+                {
+}
+            );
+        
+    
+            var poly_line_b829ef84e6eb60818cdf7b355c32958a = L.polyline(
+                [[34.4367, 35.8497], [34.6333, 36.2333]],
+                {"bubblingMouseEvents": true, "color": "#8B4513", "dashArray": "6,6", "dashOffset": null, "fill": false, "fillColor": "#8B4513", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.65, "smoothFactor": 1.0, "stroke": true, "weight": 2.2}
+            ).addTo(feature_group_217f3418d22304570a95f3e153f6b04b);
+        
+    
+        var popup_c98a642c355b296081674d8647aa3521 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_8f5b6d4d57fb3b7410d1d734d6a78bc7 = $(`<div id="html_8f5b6d4d57fb3b7410d1d734d6a78bc7" style="width: 100.0%; height: 100.0%;"><b>Tripoli ↔ Aboudiyeh</b><br>mode: historic_rail &middot; status: historic_dormant &middot; 41 km<br><i>Historic Tripoli-Homs line, dormant.</i><br>source: general historical record, not independently re-verified for this project</div>`)[0];
+                popup_c98a642c355b296081674d8647aa3521.setContent(html_8f5b6d4d57fb3b7410d1d734d6a78bc7);
+            
+        
+
+        poly_line_b829ef84e6eb60818cdf7b355c32958a.bindPopup(popup_c98a642c355b296081674d8647aa3521)
+        ;
+
+        
+    
+    
+            poly_line_b829ef84e6eb60818cdf7b355c32958a.bindTooltip(
+                `<div>
+                     Tripoli ↔ Aboudiyeh (historic_rail)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_2bc7938f9fb54eb9c07cdd666c1e279c = L.polyline(
+                [[33.9808, 35.6178], [34.9182, 33.6291]],
+                {"bubblingMouseEvents": true, "color": "#00b3b3", "dashArray": "6,6", "dashOffset": null, "fill": false, "fillColor": "#00b3b3", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.65, "smoothFactor": 1.0, "stroke": true, "weight": 2.2}
+            ).addTo(feature_group_217f3418d22304570a95f3e153f6b04b);
+        
+    
+        var popup_414ce9837d13dad57f341de472e0a2f2 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_b85f2db21143978df2b3d22da4dba033 = $(`<div id="html_b85f2db21143978df2b3d22da4dba033" style="width: 100.0%; height: 100.0%;"><b>Jounieh ↔ Larnaca</b><br>mode: ferry &middot; status: proposed_2026 &middot; 210 km<br><i>'Cedar Waves' ferry, Abou Merhi Group, ~4hr crossing, launch reported mid-2026.</i><br>source: thebeiruter.com / L'Orient Today ferry coverage, 2025-2026</div>`)[0];
+                popup_414ce9837d13dad57f341de472e0a2f2.setContent(html_b85f2db21143978df2b3d22da4dba033);
+            
+        
+
+        poly_line_2bc7938f9fb54eb9c07cdd666c1e279c.bindPopup(popup_414ce9837d13dad57f341de472e0a2f2)
+        ;
+
+        
+    
+    
+            poly_line_2bc7938f9fb54eb9c07cdd666c1e279c.bindTooltip(
+                `<div>
+                     Jounieh ↔ Larnaca (ferry)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_28cb64958487c5a548a9c879b9211806 = L.polyline(
+                [[33.9808, 35.6178], [35.5317, 35.7915]],
+                {"bubblingMouseEvents": true, "color": "#00b3b3", "dashArray": "6,6", "dashOffset": null, "fill": false, "fillColor": "#00b3b3", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.65, "smoothFactor": 1.0, "stroke": true, "weight": 2.2}
+            ).addTo(feature_group_217f3418d22304570a95f3e153f6b04b);
+        
+    
+        var popup_b3a66ff409e3410a6380a8b73822b2d0 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_3f6eddbf3f710bbffee701e9cfcb8da4 = $(`<div id="html_3f6eddbf3f710bbffee701e9cfcb8da4" style="width: 100.0%; height: 100.0%;"><b>Jounieh ↔ Latakia</b><br>mode: ferry &middot; status: proposed_2026 &middot; 173 km<br><i>Cedar Waves planned extension.</i><br>source: thebeiruter.com ferry coverage</div>`)[0];
+                popup_b3a66ff409e3410a6380a8b73822b2d0.setContent(html_3f6eddbf3f710bbffee701e9cfcb8da4);
+            
+        
+
+        poly_line_28cb64958487c5a548a9c879b9211806.bindPopup(popup_b3a66ff409e3410a6380a8b73822b2d0)
+        ;
+
+        
+    
+    
+            poly_line_28cb64958487c5a548a9c879b9211806.bindTooltip(
+                `<div>
+                     Jounieh ↔ Latakia (ferry)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_cf1dc0767897949de5134229fdfc0bdd = L.polyline(
+                [[33.9808, 35.6178], [36.8, 34.6333]],
+                {"bubblingMouseEvents": true, "color": "#00b3b3", "dashArray": "6,6", "dashOffset": null, "fill": false, "fillColor": "#00b3b3", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.65, "smoothFactor": 1.0, "stroke": true, "weight": 2.2}
+            ).addTo(feature_group_217f3418d22304570a95f3e153f6b04b);
+        
+    
+        var popup_21c9718bad6192bda8b2ecdbf6050b22 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_4391144f4fff28e31417cb5fbd7088ff = $(`<div id="html_4391144f4fff28e31417cb5fbd7088ff" style="width: 100.0%; height: 100.0%;"><b>Jounieh ↔ Mersin</b><br>mode: ferry &middot; status: proposed_2026 &middot; 326 km<br><i>Cedar Waves planned extension.</i><br>source: thebeiruter.com ferry coverage</div>`)[0];
+                popup_21c9718bad6192bda8b2ecdbf6050b22.setContent(html_4391144f4fff28e31417cb5fbd7088ff);
+            
+        
+
+        poly_line_cf1dc0767897949de5134229fdfc0bdd.bindPopup(popup_21c9718bad6192bda8b2ecdbf6050b22)
+        ;
+
+        
+    
+    
+            poly_line_cf1dc0767897949de5134229fdfc0bdd.bindTooltip(
+                `<div>
+                     Jounieh ↔ Mersin (ferry)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_b6aedd98d7eb0c163f0c869f6a45ced1 = L.polyline(
+                [[33.85, 36.0167], [33.7167, 35.9833]],
+                {"bubblingMouseEvents": true, "color": "#8B4513", "dashArray": "6,6", "dashOffset": null, "fill": false, "fillColor": "#8B4513", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.65, "smoothFactor": 1.0, "stroke": true, "weight": 2.2}
+            ).addTo(feature_group_217f3418d22304570a95f3e153f6b04b);
+        
+    
+        var popup_97d496a6662468675b66fdd3b4bbf1ae = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_de00678aac88c239bc0afb9750be2e5e = $(`<div id="html_de00678aac88c239bc0afb9750be2e5e" style="width: 100.0%; height: 100.0%;"><b>Rayak ↔ Masnaa</b><br>mode: historic_rail &middot; status: historic_dormant &middot; 15 km<br><i>Narrow-gauge Beirut-Damascus line via Rayak, dormant since the network shut down.</i><br>source: general historical record, not independently re-verified for this project</div>`)[0];
+                popup_97d496a6662468675b66fdd3b4bbf1ae.setContent(html_de00678aac88c239bc0afb9750be2e5e);
+            
+        
+
+        poly_line_b6aedd98d7eb0c163f0c869f6a45ced1.bindPopup(popup_97d496a6662468675b66fdd3b4bbf1ae)
+        ;
+
+        
+    
+    
+            poly_line_b6aedd98d7eb0c163f0c869f6a45ced1.bindTooltip(
+                `<div>
+                     Rayak ↔ Masnaa (historic_rail)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_75ac9501b6f07743c4e2d1f604fc2584 = L.polyline(
+                [[33.7167, 35.9833], [33.5138, 36.2765]],
+                {"bubblingMouseEvents": true, "color": "#8B4513", "dashArray": "6,6", "dashOffset": null, "fill": false, "fillColor": "#8B4513", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.65, "smoothFactor": 1.0, "stroke": true, "weight": 2.2}
+            ).addTo(feature_group_217f3418d22304570a95f3e153f6b04b);
+        
+    
+        var popup_adc1dbd0506e7e5dafddfbce8c58293d = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_3394a3b99499da0b97060517b626eee2 = $(`<div id="html_3394a3b99499da0b97060517b626eee2" style="width: 100.0%; height: 100.0%;"><b>Masnaa ↔ Damascus</b><br>mode: historic_rail &middot; status: historic_dormant &middot; 35 km<br><i>Continuation of the historic Beirut-Damascus line.</i><br>source: general historical record, not independently re-verified for this project</div>`)[0];
+                popup_adc1dbd0506e7e5dafddfbce8c58293d.setContent(html_3394a3b99499da0b97060517b626eee2);
+            
+        
+
+        poly_line_75ac9501b6f07743c4e2d1f604fc2584.bindPopup(popup_adc1dbd0506e7e5dafddfbce8c58293d)
+        ;
+
+        
+    
+    
+            poly_line_75ac9501b6f07743c4e2d1f604fc2584.bindTooltip(
+                `<div>
+                     Masnaa ↔ Damascus (historic_rail)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_a00e1f28b67f5fd8beaa7005c1eb7461 = L.polyline(
+                [[34.6333, 36.2333], [34.7324, 36.7137]],
+                {"bubblingMouseEvents": true, "color": "#8B4513", "dashArray": "6,6", "dashOffset": null, "fill": false, "fillColor": "#8B4513", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.65, "smoothFactor": 1.0, "stroke": true, "weight": 2.2}
+            ).addTo(feature_group_217f3418d22304570a95f3e153f6b04b);
+        
+    
+        var popup_dc31f67f5ba1428d7296070ea1f1b543 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_8f3a116d365893e2300217633d34f0a9 = $(`<div id="html_8f3a116d365893e2300217633d34f0a9" style="width: 100.0%; height: 100.0%;"><b>Aboudiyeh ↔ Homs</b><br>mode: historic_rail &middot; status: historic_dormant &middot; 45 km<br><i>Continuation of the historic Tripoli-Homs line; named in 2024-2025 Lebanese rail-revival feasibility discussions.</i><br>source: AGBI: lebanese-officials-promote-revival-of-rail-network (2025-01)</div>`)[0];
+                popup_dc31f67f5ba1428d7296070ea1f1b543.setContent(html_8f3a116d365893e2300217633d34f0a9);
+            
+        
+
+        poly_line_a00e1f28b67f5fd8beaa7005c1eb7461.bindPopup(popup_dc31f67f5ba1428d7296070ea1f1b543)
+        ;
+
+        
+    
+    
+            poly_line_a00e1f28b67f5fd8beaa7005c1eb7461.bindTooltip(
+                `<div>
+                     Aboudiyeh ↔ Homs (historic_rail)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_9ba06c457f93aef27ffc77ae209cc21c = L.polyline(
+                [[33.5138, 36.2765], [34.7324, 36.7137]],
+                {"bubblingMouseEvents": true, "color": "#e31a1c", "dashArray": "6,6", "dashOffset": null, "fill": false, "fillColor": "#e31a1c", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.65, "smoothFactor": 1.0, "stroke": true, "weight": 2.2}
+            ).addTo(feature_group_217f3418d22304570a95f3e153f6b04b);
+        
+    
+        var popup_4180767de9de73a235cfaaee94c0027b = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_167e83e18ab905b54f9091b38f107b0d = $(`<div id="html_167e83e18ab905b54f9091b38f107b0d" style="width: 100.0%; height: 100.0%;"><b>Damascus ↔ Homs</b><br>mode: rail &middot; status: proposed_revival &middot; 141 km<br><i>Arab Mashreq International Railway agreement -- Lebanon is a signatory (ESCWA, 2003/2005).</i><br>source: ESCWA Agreement on International Railways in the Arab Mashreq</div>`)[0];
+                popup_4180767de9de73a235cfaaee94c0027b.setContent(html_167e83e18ab905b54f9091b38f107b0d);
+            
+        
+
+        poly_line_9ba06c457f93aef27ffc77ae209cc21c.bindPopup(popup_4180767de9de73a235cfaaee94c0027b)
+        ;
+
+        
+    
+    
+            poly_line_9ba06c457f93aef27ffc77ae209cc21c.bindTooltip(
+                `<div>
+                     Damascus ↔ Homs (rail)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_e818c10178ed6b662a8bfbbbbeb4c414 = L.polyline(
+                [[33.5138, 36.2765], [31.9539, 35.9106]],
+                {"bubblingMouseEvents": true, "color": "#e31a1c", "dashArray": "6,6", "dashOffset": null, "fill": false, "fillColor": "#e31a1c", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.65, "smoothFactor": 1.0, "stroke": true, "weight": 2.2}
+            ).addTo(feature_group_217f3418d22304570a95f3e153f6b04b);
+        
+    
+        var popup_dbc64d21eb738766ef5e83de48e57ea3 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_6d766e6b6b5cfdc21dab1cb8d795496b = $(`<div id="html_6d766e6b6b5cfdc21dab1cb8d795496b" style="width: 100.0%; height: 100.0%;"><b>Damascus ↔ Amman</b><br>mode: rail &middot; status: proposed_revival &middot; 177 km<br><i>April 2026 Amman trilateral transport memorandum (Turkey-Syria-Jordan).</i><br>source: Middle East Eye Hejaz Railway coverage, 2026-04</div>`)[0];
+                popup_dbc64d21eb738766ef5e83de48e57ea3.setContent(html_6d766e6b6b5cfdc21dab1cb8d795496b);
+            
+        
+
+        poly_line_e818c10178ed6b662a8bfbbbbeb4c414.bindPopup(popup_dbc64d21eb738766ef5e83de48e57ea3)
+        ;
+
+        
+    
+    
+            poly_line_e818c10178ed6b662a8bfbbbbeb4c414.bindTooltip(
+                `<div>
+                     Damascus ↔ Amman (rail)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_4ab5d3603d844d934890919d4ed7c274 = L.polyline(
+                [[34.7324, 36.7137], [36.2021, 37.1343]],
+                {"bubblingMouseEvents": true, "color": "#e31a1c", "dashArray": "6,6", "dashOffset": null, "fill": false, "fillColor": "#e31a1c", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.65, "smoothFactor": 1.0, "stroke": true, "weight": 2.2}
+            ).addTo(feature_group_217f3418d22304570a95f3e153f6b04b);
+        
+    
+        var popup_bd6765765b2dfdeaa6690490b1f000ad = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_936d443a51315d09b7a9cd52e5e59416 = $(`<div id="html_936d443a51315d09b7a9cd52e5e59416" style="width: 100.0%; height: 100.0%;"><b>Homs ↔ Aleppo</b><br>mode: rail &middot; status: proposed_revival &middot; 168 km<br><i>Sept 2025 Turkey-Syria-Jordan framework reviving the Hejaz Railway; first phase reconnects Turkey to Aleppo, then onward via Aleppo-Damascus-Jordan.</i><br>source: Middle East Eye / AGSI Hejaz Railway coverage, 2025-2026</div>`)[0];
+                popup_bd6765765b2dfdeaa6690490b1f000ad.setContent(html_936d443a51315d09b7a9cd52e5e59416);
+            
+        
+
+        poly_line_4ab5d3603d844d934890919d4ed7c274.bindPopup(popup_bd6765765b2dfdeaa6690490b1f000ad)
+        ;
+
+        
+    
+    
+            poly_line_4ab5d3603d844d934890919d4ed7c274.bindTooltip(
+                `<div>
+                     Homs ↔ Aleppo (rail)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_d314f53ba327785b61fc6d99b36f9df1 = L.polyline(
+                [[31.9539, 35.9106], [24.7136, 46.6753]],
+                {"bubblingMouseEvents": true, "color": "#e31a1c", "dashArray": "6,6", "dashOffset": null, "fill": false, "fillColor": "#e31a1c", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.65, "smoothFactor": 1.0, "stroke": true, "weight": 2.2}
+            ).addTo(feature_group_217f3418d22304570a95f3e153f6b04b);
+        
+    
+        var popup_b79c14725ac5d3051852511784280ae9 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_f9170be584557403e99665fc3666434e = $(`<div id="html_f9170be584557403e99665fc3666434e" style="width: 100.0%; height: 100.0%;"><b>Amman ↔ Riyadh</b><br>mode: rail &middot; status: proposed_revival &middot; 1325 km<br><i>June 9 2026 Turkey-Saudi Arabia MoU extending the revival from Jordan's al-Haditha crossing into the Saudi rail network toward Riyadh.</i><br>source: Middle East Eye Hejaz Railway coverage, 2026-06</div>`)[0];
+                popup_b79c14725ac5d3051852511784280ae9.setContent(html_f9170be584557403e99665fc3666434e);
+            
+        
+
+        poly_line_d314f53ba327785b61fc6d99b36f9df1.bindPopup(popup_b79c14725ac5d3051852511784280ae9)
+        ;
+
+        
+    
+    
+            poly_line_d314f53ba327785b61fc6d99b36f9df1.bindTooltip(
+                `<div>
+                     Amman ↔ Riyadh (rail)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            feature_group_217f3418d22304570a95f3e153f6b04b.addTo(map_e6b4a75baf5f576f327afbf3b834252e);
+        
+    
+            var feature_group_78add150ed48b46e43ef379fcb1678d7 = L.featureGroup(
+                {
+}
+            );
+        
+    
+            var marker_0eec34df067c4fe368e1dc923504d126 = L.marker(
+                [33.8938, 35.5018],
+                {
+}
+            ).addTo(feature_group_78add150ed48b46e43ef379fcb1678d7);
+        
+    
+            var icon_803ba12cc0fd6e40a592ce12ec887118 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "#ffe08a",
+  "icon": "star",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_9e846b49527a4324bf1d402267440fad = L.popup({
+  "maxWidth": 280,
+});
+
+        
+            
+                var html_5ae4daf9eb45257b6e286dffaec43566 = $(`<div id="html_5ae4daf9eb45257b6e286dffaec43566" style="width: 100.0%; height: 100.0%;"><b>Beirut</b><br>city_port &middot; Lebanon<br><i>Reuses settings.GBA_CENTER_LATLON directly -- skip geocoding for this node. Aggregates the already-modeled B1-B7/ML1-4 trunk network from Layer B.</i></div>`)[0];
+                popup_9e846b49527a4324bf1d402267440fad.setContent(html_5ae4daf9eb45257b6e286dffaec43566);
+            
+        
+
+        marker_0eec34df067c4fe368e1dc923504d126.bindPopup(popup_9e846b49527a4324bf1d402267440fad)
+        ;
+
+        
+    
+    
+            marker_0eec34df067c4fe368e1dc923504d126.bindTooltip(
+                `<div>
+                     Beirut (city_port, Lebanon)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_0eec34df067c4fe368e1dc923504d126.setIcon(icon_803ba12cc0fd6e40a592ce12ec887118);
+            
+    
+            var marker_890fe1a654effd7c5c8fb2f8cc06f40b = L.marker(
+                [34.4367, 35.8497],
+                {
+}
+            ).addTo(feature_group_78add150ed48b46e43ef379fcb1678d7);
+        
+    
+            var icon_0e1625a58b1d3c70039fa04487563930 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "ship",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_c948801537893c2dfabf32cbea06678c = L.popup({
+  "maxWidth": 280,
+});
+
+        
+            
+                var html_3bf6021a8ae0dd7e93037c6c106d913f = $(`<div id="html_3bf6021a8ae0dd7e93037c6c106d913f" style="width: 100.0%; height: 100.0%;"><b>Tripoli</b><br>port &middot; Lebanon<br><i>ML4's real geocoded terminus in this repo. NOTE: ocftc_digitized/README.md's original source search only confirmed B1/B2/B3/ML3 as regularly operating -- ML4's operating status is unconfirmed, not just planned-vs-built.</i></div>`)[0];
+                popup_c948801537893c2dfabf32cbea06678c.setContent(html_3bf6021a8ae0dd7e93037c6c106d913f);
+            
+        
+
+        marker_890fe1a654effd7c5c8fb2f8cc06f40b.bindPopup(popup_c948801537893c2dfabf32cbea06678c)
+        ;
+
+        
+    
+    
+            marker_890fe1a654effd7c5c8fb2f8cc06f40b.bindTooltip(
+                `<div>
+                     Tripoli (port, Lebanon)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_890fe1a654effd7c5c8fb2f8cc06f40b.setIcon(icon_0e1625a58b1d3c70039fa04487563930);
+            
+    
+            var marker_8219ae1cd9373a487f1c1677c3d9a8a4 = L.marker(
+                [33.9808, 35.6178],
+                {
+}
+            ).addTo(feature_group_78add150ed48b46e43ef379fcb1678d7);
+        
+    
+            var icon_eefed87d52a7ca547b41da2a4250ae84 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "ship",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_28db4c4c22fdb6c4edd02d891674f8b9 = L.popup({
+  "maxWidth": 280,
+});
+
+        
+            
+                var html_88fabcb9d52df80fdf4429162b8b42b5 = $(`<div id="html_88fabcb9d52df80fdf4429162b8b42b5" style="width: 100.0%; height: 100.0%;"><b>Jounieh</b><br>port &middot; Lebanon<br><i>Intermediate point on the real ML4 corridor. Cedar Waves ferry port (Jounieh-Cyprus service), launch reported for mid-2026.</i></div>`)[0];
+                popup_28db4c4c22fdb6c4edd02d891674f8b9.setContent(html_88fabcb9d52df80fdf4429162b8b42b5);
+            
+        
+
+        marker_8219ae1cd9373a487f1c1677c3d9a8a4.bindPopup(popup_28db4c4c22fdb6c4edd02d891674f8b9)
+        ;
+
+        
+    
+    
+            marker_8219ae1cd9373a487f1c1677c3d9a8a4.bindTooltip(
+                `<div>
+                     Jounieh (port, Lebanon)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_8219ae1cd9373a487f1c1677c3d9a8a4.setIcon(icon_eefed87d52a7ca547b41da2a4250ae84);
+            
+    
+            var marker_9413dc20ca0fa06d820e0d019870365e = L.marker(
+                [33.5606, 35.3758],
+                {
+}
+            ).addTo(feature_group_78add150ed48b46e43ef379fcb1678d7);
+        
+    
+            var icon_de60626e4cc222c77ad036be0e6c4ec6 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "ship",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_d004a4401c81848a0d49b274009d7e87 = L.popup({
+  "maxWidth": 280,
+});
+
+        
+            
+                var html_4d1ed60c2d31029118cd22b3f71c38b6 = $(`<div id="html_4d1ed60c2d31029118cd22b3f71c38b6" style="width: 100.0%; height: 100.0%;"><b>Saida</b><br>port &middot; Lebanon<br><i>Intermediate point on the real B6-ML2 corridor.</i></div>`)[0];
+                popup_d004a4401c81848a0d49b274009d7e87.setContent(html_4d1ed60c2d31029118cd22b3f71c38b6);
+            
+        
+
+        marker_9413dc20ca0fa06d820e0d019870365e.bindPopup(popup_d004a4401c81848a0d49b274009d7e87)
+        ;
+
+        
+    
+    
+            marker_9413dc20ca0fa06d820e0d019870365e.bindTooltip(
+                `<div>
+                     Saida (port, Lebanon)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_9413dc20ca0fa06d820e0d019870365e.setIcon(icon_de60626e4cc222c77ad036be0e6c4ec6);
+            
+    
+            var marker_0546ede7383ff3b73772823fdb7be766 = L.marker(
+                [33.2704, 35.2038],
+                {
+}
+            ).addTo(feature_group_78add150ed48b46e43ef379fcb1678d7);
+        
+    
+            var icon_716ce93e8ac85c488d2078e08d4af1cd = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "ship",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_35383a2622620010e0c0750c29dd31d2 = L.popup({
+  "maxWidth": 280,
+});
+
+        
+            
+                var html_4f4012c6acdbc184c80dcde0d26d1366 = $(`<div id="html_4f4012c6acdbc184c80dcde0d26d1366" style="width: 100.0%; height: 100.0%;"><b>Tyre</b><br>port &middot; Lebanon<br><i>B6-ML2's real geocoded terminus in this repo (confirmed via ocftc_stops_manual.csv, last stop = 'Tyre / Borj El Chmali Intersection'). Operating status unconfirmed, same caveat as Tripoli.</i></div>`)[0];
+                popup_35383a2622620010e0c0750c29dd31d2.setContent(html_4f4012c6acdbc184c80dcde0d26d1366);
+            
+        
+
+        marker_0546ede7383ff3b73772823fdb7be766.bindPopup(popup_35383a2622620010e0c0750c29dd31d2)
+        ;
+
+        
+    
+    
+            marker_0546ede7383ff3b73772823fdb7be766.bindTooltip(
+                `<div>
+                     Tyre (port, Lebanon)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_0546ede7383ff3b73772823fdb7be766.setIcon(icon_716ce93e8ac85c488d2078e08d4af1cd);
+            
+    
+            var marker_9a5e1be737bbdd2771640d942d1a9b11 = L.marker(
+                [33.8175, 35.8536],
+                {
+}
+            ).addTo(feature_group_78add150ed48b46e43ef379fcb1678d7);
+        
+    
+            var icon_caf00b999d033ee67406b48126294195 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "road",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_c03f477e90c998d2206bea57dc7f96b7 = L.popup({
+  "maxWidth": 280,
+});
+
+        
+            
+                var html_8f481907d5b610106eb2c4df4c475468 = $(`<div id="html_8f481907d5b610106eb2c4df4c475468" style="width: 100.0%; height: 100.0%;"><b>Chtaura</b><br>inland_hub &middot; Lebanon<br><i>ML1's real geocoded terminus in this repo. Operating status unconfirmed, same caveat as Tripoli.</i></div>`)[0];
+                popup_c03f477e90c998d2206bea57dc7f96b7.setContent(html_8f481907d5b610106eb2c4df4c475468);
+            
+        
+
+        marker_9a5e1be737bbdd2771640d942d1a9b11.bindPopup(popup_c03f477e90c998d2206bea57dc7f96b7)
+        ;
+
+        
+    
+    
+            marker_9a5e1be737bbdd2771640d942d1a9b11.bindTooltip(
+                `<div>
+                     Chtaura (inland_hub, Lebanon)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_9a5e1be737bbdd2771640d942d1a9b11.setIcon(icon_caf00b999d033ee67406b48126294195);
+            
+    
+            var marker_890b0ead86509e4147b3f88b145be925 = L.marker(
+                [34.0059, 36.2181],
+                {
+}
+            ).addTo(feature_group_78add150ed48b46e43ef379fcb1678d7);
+        
+    
+            var icon_67bea87d47d2272c0aadade037ce8a66 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "road",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_559f0935c4b5ab726538d0c224d6c617 = L.popup({
+  "maxWidth": 280,
+});
+
+        
+            
+                var html_eb4478fb64f9786c6822430900f7884b = $(`<div id="html_eb4478fb64f9786c6822430900f7884b" style="width: 100.0%; height: 100.0%;"><b>Baalbek</b><br>inland_hub &middot; Lebanon<br><i>Beyond ML1's actual terminus (Chtaura) -- no formal transit reaches Baalbek today.</i></div>`)[0];
+                popup_559f0935c4b5ab726538d0c224d6c617.setContent(html_eb4478fb64f9786c6822430900f7884b);
+            
+        
+
+        marker_890b0ead86509e4147b3f88b145be925.bindPopup(popup_559f0935c4b5ab726538d0c224d6c617)
+        ;
+
+        
+    
+    
+            marker_890b0ead86509e4147b3f88b145be925.bindTooltip(
+                `<div>
+                     Baalbek (inland_hub, Lebanon)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_890b0ead86509e4147b3f88b145be925.setIcon(icon_67bea87d47d2272c0aadade037ce8a66);
+            
+    
+            var marker_9f525ab50d3fabc72c57c1686225fafb = L.marker(
+                [33.85, 36.0167],
+                {
+}
+            ).addTo(feature_group_78add150ed48b46e43ef379fcb1678d7);
+        
+    
+            var icon_b15e0ae06129ad689563ee778fc8679e = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "orange",
+  "iconColor": "white",
+  "icon": "train",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_da0370aff3f50a01bd301e1176ffedc0 = L.popup({
+  "maxWidth": 280,
+});
+
+        
+            
+                var html_3947c63e16dc6038a01111128dd960d2 = $(`<div id="html_3947c63e16dc6038a01111128dd960d2" style="width: 100.0%; height: 100.0%;"><b>Rayak</b><br>rail_junction &middot; Lebanon<br><i>Historic junction of the narrow-gauge Beirut-Damascus line and the standard-gauge line toward Homs/Aleppo/the old Hejaz network. Dormant since the network shut down in the 1970s-1990s.</i></div>`)[0];
+                popup_da0370aff3f50a01bd301e1176ffedc0.setContent(html_3947c63e16dc6038a01111128dd960d2);
+            
+        
+
+        marker_9f525ab50d3fabc72c57c1686225fafb.bindPopup(popup_da0370aff3f50a01bd301e1176ffedc0)
+        ;
+
+        
+    
+    
+            marker_9f525ab50d3fabc72c57c1686225fafb.bindTooltip(
+                `<div>
+                     Rayak (rail_junction, Lebanon)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_9f525ab50d3fabc72c57c1686225fafb.setIcon(icon_b15e0ae06129ad689563ee778fc8679e);
+            
+    
+            var marker_b48bdd58633b231c8618831aa3217ad6 = L.marker(
+                [33.7167, 35.9833],
+                {
+}
+            ).addTo(feature_group_78add150ed48b46e43ef379fcb1678d7);
+        
+    
+            var icon_c307a0eac5e4cf8eaebb01106ce0f296 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "purple",
+  "iconColor": "white",
+  "icon": "flag",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_e75667794a7f00b665cb65ca9f497384 = L.popup({
+  "maxWidth": 280,
+});
+
+        
+            
+                var html_d2014f4757d9de35463bbb6b52d2857a = $(`<div id="html_d2014f4757d9de35463bbb6b52d2857a" style="width: 100.0%; height: 100.0%;"><b>Masnaa</b><br>border_crossing &middot; Lebanon<br><i>Lebanon-Syria crossing on the historic/current Beirut-Damascus corridor.</i></div>`)[0];
+                popup_e75667794a7f00b665cb65ca9f497384.setContent(html_d2014f4757d9de35463bbb6b52d2857a);
+            
+        
+
+        marker_b48bdd58633b231c8618831aa3217ad6.bindPopup(popup_e75667794a7f00b665cb65ca9f497384)
+        ;
+
+        
+    
+    
+            marker_b48bdd58633b231c8618831aa3217ad6.bindTooltip(
+                `<div>
+                     Masnaa (border_crossing, Lebanon)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_b48bdd58633b231c8618831aa3217ad6.setIcon(icon_c307a0eac5e4cf8eaebb01106ce0f296);
+            
+    
+            var marker_b9a298c28458e29aed4e4fad704cebfe = L.marker(
+                [34.6333, 36.2333],
+                {
+}
+            ).addTo(feature_group_78add150ed48b46e43ef379fcb1678d7);
+        
+    
+            var icon_7dab5fc953cea0a09b2a7558e52ffa1a = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "purple",
+  "iconColor": "white",
+  "icon": "flag",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_84d0bf0ebe910ca6f2de4a473b22e408 = L.popup({
+  "maxWidth": 280,
+});
+
+        
+            
+                var html_373b941534d7c27a3a6b133844b02fa5 = $(`<div id="html_373b941534d7c27a3a6b133844b02fa5" style="width: 100.0%; height: 100.0%;"><b>Aboudiyeh</b><br>border_crossing &middot; Lebanon<br><i>Lebanon-Syria crossing on the historic Tripoli-Homs rail corridor; also the corridor named in 2024-2025 Lebanese rail-revival feasibility discussions.</i></div>`)[0];
+                popup_84d0bf0ebe910ca6f2de4a473b22e408.setContent(html_373b941534d7c27a3a6b133844b02fa5);
+            
+        
+
+        marker_b9a298c28458e29aed4e4fad704cebfe.bindPopup(popup_84d0bf0ebe910ca6f2de4a473b22e408)
+        ;
+
+        
+    
+    
+            marker_b9a298c28458e29aed4e4fad704cebfe.bindTooltip(
+                `<div>
+                     Aboudiyeh (border_crossing, Lebanon)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_b9a298c28458e29aed4e4fad704cebfe.setIcon(icon_7dab5fc953cea0a09b2a7558e52ffa1a);
+            
+    
+            var marker_113a36037105a9ef7b1a0b6390a70b5b = L.marker(
+                [33.5138, 36.2765],
+                {
+}
+            ).addTo(feature_group_78add150ed48b46e43ef379fcb1678d7);
+        
+    
+            var icon_e7523c0686009fad3f1138b13fba5a24 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "gray",
+  "iconColor": "white",
+  "icon": "building",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_f35f97c0bd896cd60e98a23800e88085 = L.popup({
+  "maxWidth": 280,
+});
+
+        
+            
+                var html_eddec98103e96cfe87c48fb59b3a0e96 = $(`<div id="html_eddec98103e96cfe87c48fb59b3a0e96" style="width: 100.0%; height: 100.0%;"><b>Damascus</b><br>city &middot; Syria<br><i>Historic Beirut-Damascus rail terminus; Arab Mashreq International Railway node.</i></div>`)[0];
+                popup_f35f97c0bd896cd60e98a23800e88085.setContent(html_eddec98103e96cfe87c48fb59b3a0e96);
+            
+        
+
+        marker_113a36037105a9ef7b1a0b6390a70b5b.bindPopup(popup_f35f97c0bd896cd60e98a23800e88085)
+        ;
+
+        
+    
+    
+            marker_113a36037105a9ef7b1a0b6390a70b5b.bindTooltip(
+                `<div>
+                     Damascus (city, Syria)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_113a36037105a9ef7b1a0b6390a70b5b.setIcon(icon_e7523c0686009fad3f1138b13fba5a24);
+            
+    
+            var marker_2d9b4d594f4897881b91ae7fcc081a1f = L.marker(
+                [34.7324, 36.7137],
+                {
+}
+            ).addTo(feature_group_78add150ed48b46e43ef379fcb1678d7);
+        
+    
+            var icon_b83cf566d92884d08b448217ac8a4207 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "gray",
+  "iconColor": "white",
+  "icon": "building",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_7cb3e4a0109602cab47f3790bd432eb5 = L.popup({
+  "maxWidth": 280,
+});
+
+        
+            
+                var html_6ea662415b821aecfe56a755f22386cf = $(`<div id="html_6ea662415b821aecfe56a755f22386cf" style="width: 100.0%; height: 100.0%;"><b>Homs</b><br>city &middot; Syria<br><i>Historic Tripoli-Homs rail terminus; node on the Hejaz Railway revival corridor.</i></div>`)[0];
+                popup_7cb3e4a0109602cab47f3790bd432eb5.setContent(html_6ea662415b821aecfe56a755f22386cf);
+            
+        
+
+        marker_2d9b4d594f4897881b91ae7fcc081a1f.bindPopup(popup_7cb3e4a0109602cab47f3790bd432eb5)
+        ;
+
+        
+    
+    
+            marker_2d9b4d594f4897881b91ae7fcc081a1f.bindTooltip(
+                `<div>
+                     Homs (city, Syria)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_2d9b4d594f4897881b91ae7fcc081a1f.setIcon(icon_b83cf566d92884d08b448217ac8a4207);
+            
+    
+            var marker_dba58f69eae80786d0585274d12bf070 = L.marker(
+                [36.2021, 37.1343],
+                {
+}
+            ).addTo(feature_group_78add150ed48b46e43ef379fcb1678d7);
+        
+    
+            var icon_5bd05864d9fb3c094f0f0b2752793337 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "gray",
+  "iconColor": "white",
+  "icon": "building",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_dee95d0348fe54b284aa779340e45f8c = L.popup({
+  "maxWidth": 280,
+});
+
+        
+            
+                var html_34e05eaec240acc8c687e44342d29301 = $(`<div id="html_34e05eaec240acc8c687e44342d29301" style="width: 100.0%; height: 100.0%;"><b>Aleppo</b><br>city &middot; Syria<br><i>Stands in for the Turkey-bound leg of the Hejaz Railway revival (the Sept 2025 Turkey-Syria-Jordan framework's first phase: Turkey to Aleppo, then Aleppo-Damascus-Jordan).</i></div>`)[0];
+                popup_dee95d0348fe54b284aa779340e45f8c.setContent(html_34e05eaec240acc8c687e44342d29301);
+            
+        
+
+        marker_dba58f69eae80786d0585274d12bf070.bindPopup(popup_dee95d0348fe54b284aa779340e45f8c)
+        ;
+
+        
+    
+    
+            marker_dba58f69eae80786d0585274d12bf070.bindTooltip(
+                `<div>
+                     Aleppo (city, Syria)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_dba58f69eae80786d0585274d12bf070.setIcon(icon_5bd05864d9fb3c094f0f0b2752793337);
+            
+    
+            var marker_196f279db7447c2895d397faae433c99 = L.marker(
+                [31.9539, 35.9106],
+                {
+}
+            ).addTo(feature_group_78add150ed48b46e43ef379fcb1678d7);
+        
+    
+            var icon_f7a342c90a441fc03410b8d24bec1fe0 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "gray",
+  "iconColor": "white",
+  "icon": "building",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_50e532b017243c13d1a4cbb991be2c66 = L.popup({
+  "maxWidth": 280,
+});
+
+        
+            
+                var html_128eb27f3012a998af1f475e80e119a6 = $(`<div id="html_128eb27f3012a998af1f475e80e119a6" style="width: 100.0%; height: 100.0%;"><b>Amman</b><br>city &middot; Jordan<br><i>Node for the April 2026 Amman trilateral transport memorandum (Turkey-Syria-Jordan).</i></div>`)[0];
+                popup_50e532b017243c13d1a4cbb991be2c66.setContent(html_128eb27f3012a998af1f475e80e119a6);
+            
+        
+
+        marker_196f279db7447c2895d397faae433c99.bindPopup(popup_50e532b017243c13d1a4cbb991be2c66)
+        ;
+
+        
+    
+    
+            marker_196f279db7447c2895d397faae433c99.bindTooltip(
+                `<div>
+                     Amman (city, Jordan)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_196f279db7447c2895d397faae433c99.setIcon(icon_f7a342c90a441fc03410b8d24bec1fe0);
+            
+    
+            var marker_31aae0de8a02eb8f2e6096a92bcafbb1 = L.marker(
+                [24.7136, 46.6753],
+                {
+}
+            ).addTo(feature_group_78add150ed48b46e43ef379fcb1678d7);
+        
+    
+            var icon_0c38e82ee4b1d32b924adbe378c8b9a2 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "gray",
+  "iconColor": "white",
+  "icon": "building",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_e2d29d5627ad26acfee1884f7c6ce62c = L.popup({
+  "maxWidth": 280,
+});
+
+        
+            
+                var html_196fea9f9bf7d41ad3845dddaf757e1b = $(`<div id="html_196fea9f9bf7d41ad3845dddaf757e1b" style="width: 100.0%; height: 100.0%;"><b>Riyadh</b><br>city &middot; Saudi Arabia<br><i>Node for the June 2026 Turkey-Saudi Arabia MoU extending the revival from Jordan's al-Haditha crossing into the Saudi network.</i></div>`)[0];
+                popup_e2d29d5627ad26acfee1884f7c6ce62c.setContent(html_196fea9f9bf7d41ad3845dddaf757e1b);
+            
+        
+
+        marker_31aae0de8a02eb8f2e6096a92bcafbb1.bindPopup(popup_e2d29d5627ad26acfee1884f7c6ce62c)
+        ;
+
+        
+    
+    
+            marker_31aae0de8a02eb8f2e6096a92bcafbb1.bindTooltip(
+                `<div>
+                     Riyadh (city, Saudi Arabia)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_31aae0de8a02eb8f2e6096a92bcafbb1.setIcon(icon_0c38e82ee4b1d32b924adbe378c8b9a2);
+            
+    
+            var marker_c6ac6f2f973c69c67d7c547cd6ef132e = L.marker(
+                [34.9182, 33.6291],
+                {
+}
+            ).addTo(feature_group_78add150ed48b46e43ef379fcb1678d7);
+        
+    
+            var icon_5c4e6cb758d0b6226f05675de730a2be = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "ship",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_8f45a79d4ce4d39adbf47e0c6fe22958 = L.popup({
+  "maxWidth": 280,
+});
+
+        
+            
+                var html_efbde2985cb5be5fe1dcf517ac010041 = $(`<div id="html_efbde2985cb5be5fe1dcf517ac010041" style="width: 100.0%; height: 100.0%;"><b>Larnaca</b><br>port &middot; Cyprus<br><i>Cedar Waves ferry destination from Jounieh (~4hr crossing), launch reported for mid-2026.</i></div>`)[0];
+                popup_8f45a79d4ce4d39adbf47e0c6fe22958.setContent(html_efbde2985cb5be5fe1dcf517ac010041);
+            
+        
+
+        marker_c6ac6f2f973c69c67d7c547cd6ef132e.bindPopup(popup_8f45a79d4ce4d39adbf47e0c6fe22958)
+        ;
+
+        
+    
+    
+            marker_c6ac6f2f973c69c67d7c547cd6ef132e.bindTooltip(
+                `<div>
+                     Larnaca (port, Cyprus)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_c6ac6f2f973c69c67d7c547cd6ef132e.setIcon(icon_5c4e6cb758d0b6226f05675de730a2be);
+            
+    
+            var marker_f41342d876b8f50f8c3cfdc72cac4967 = L.marker(
+                [35.5317, 35.7915],
+                {
+}
+            ).addTo(feature_group_78add150ed48b46e43ef379fcb1678d7);
+        
+    
+            var icon_f74d1bf258775cc409acf1ea99aaa66d = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "ship",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_ad7783fcc86d037a2a9de4ec9df16eea = L.popup({
+  "maxWidth": 280,
+});
+
+        
+            
+                var html_50653c3ce2f8902be15fcf07b7259a18 = $(`<div id="html_50653c3ce2f8902be15fcf07b7259a18" style="width: 100.0%; height: 100.0%;"><b>Latakia</b><br>port &middot; Syria<br><i>Cedar Waves planned extension from Jounieh.</i></div>`)[0];
+                popup_ad7783fcc86d037a2a9de4ec9df16eea.setContent(html_50653c3ce2f8902be15fcf07b7259a18);
+            
+        
+
+        marker_f41342d876b8f50f8c3cfdc72cac4967.bindPopup(popup_ad7783fcc86d037a2a9de4ec9df16eea)
+        ;
+
+        
+    
+    
+            marker_f41342d876b8f50f8c3cfdc72cac4967.bindTooltip(
+                `<div>
+                     Latakia (port, Syria)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_f41342d876b8f50f8c3cfdc72cac4967.setIcon(icon_f74d1bf258775cc409acf1ea99aaa66d);
+            
+    
+            var marker_8017896660e8f0357e297a3724a18508 = L.marker(
+                [36.8, 34.6333],
+                {
+}
+            ).addTo(feature_group_78add150ed48b46e43ef379fcb1678d7);
+        
+    
+            var icon_4cf265db5598a8ae5dd20dc19429d817 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "ship",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_624299b0fc89e241323c84a157d9586e = L.popup({
+  "maxWidth": 280,
+});
+
+        
+            
+                var html_cdae4f3f5a098e9ad9154faa791e0718 = $(`<div id="html_cdae4f3f5a098e9ad9154faa791e0718" style="width: 100.0%; height: 100.0%;"><b>Mersin</b><br>port &middot; Turkey<br><i>Cedar Waves planned extension from Jounieh.</i></div>`)[0];
+                popup_624299b0fc89e241323c84a157d9586e.setContent(html_cdae4f3f5a098e9ad9154faa791e0718);
+            
+        
+
+        marker_8017896660e8f0357e297a3724a18508.bindPopup(popup_624299b0fc89e241323c84a157d9586e)
+        ;
+
+        
+    
+    
+            marker_8017896660e8f0357e297a3724a18508.bindTooltip(
+                `<div>
+                     Mersin (port, Turkey)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_8017896660e8f0357e297a3724a18508.setIcon(icon_4cf265db5598a8ae5dd20dc19429d817);
+            
+    
+            feature_group_78add150ed48b46e43ef379fcb1678d7.addTo(map_e6b4a75baf5f576f327afbf3b834252e);
+        
+    
+            var layer_control_a339a71e0e10a1eba3d52961b3ca2bba_layers = {
+                base_layers : {
+                    "cartodbpositron" : tile_layer_f13143a7cbe0299377c25c0cb3fae4e9,
+                },
+                overlays :  {
+                    "Status-quo edges (today)" : feature_group_a9ce0332b32e619c243a48523601ac8e,
+                    "Proposed-only edges (restored/added)" : feature_group_217f3418d22304570a95f3e153f6b04b,
+                    "Nodes" : feature_group_78add150ed48b46e43ef379fcb1678d7,
+                },
+            };
+            let layer_control_a339a71e0e10a1eba3d52961b3ca2bba = L.control.layers(
+                layer_control_a339a71e0e10a1eba3d52961b3ca2bba_layers.base_layers,
+                layer_control_a339a71e0e10a1eba3d52961b3ca2bba_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": false,
+  "autoZIndex": true,
+}
+            ).addTo(map_e6b4a75baf5f576f327afbf3b834252e);
+
+        
+</script>
+</html>

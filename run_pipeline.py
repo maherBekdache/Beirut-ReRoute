@@ -29,6 +29,15 @@ STAGES = [
     ("mclp", "beirut_reroute.optimization.run_mclp_all_lines", "compute"),
     ("simulation", "beirut_reroute.simulation.run_simulation_all_lines", "compute"),
     ("qa_map", "beirut_reroute.viz.maps", "compute"),
+    ("results_map", "beirut_reroute.viz.results_map", "compute"),
+    # Layer A -- national/regional vision (see "Lebanon ReConnect - Layer A
+    # Implementation Plan.md"). Independent of everything above except
+    # sharing the same config/settings.py and output directories.
+    ("national_geocode", "beirut_reroute.national_network.geocode_nodes", "fetch"),
+    ("national_vision", "beirut_reroute.national_network.run_vision_analysis", "compute"),
+    # Static charts for the report/video -- reads Layer A + Layer B outputs
+    # above, must run last.
+    ("charts", "beirut_reroute.viz.charts", "compute"),
 ]
 
 

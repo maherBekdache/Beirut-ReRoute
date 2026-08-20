@@ -183,17 +183,39 @@ def main() -> None:
             per_line.append(result)
 
     print("\nPer-line trunk speed (status quo -> proposed):")
+    per_line_rows = []
     for r in per_line:
-        print(f"  {r['line_id']}: {r['sq_summary'].trunk_avg_speed_kmh:.1f} -> "
-              f"{r['prop_summary'].trunk_avg_speed_kmh:.1f} km/h")
+        sq_s, prop_s = r["sq_summary"], r["prop_summary"]
+        print(f"  {r['line_id']}: {sq_s.trunk_avg_speed_kmh:.1f} -> {prop_s.trunk_avg_speed_kmh:.1f} km/h")
+        sq_speed = sq_s.trunk_avg_speed_kmh
+        prop_speed = prop_s.trunk_avg_speed_kmh
+        per_line_rows.append({
+            "line_id": r["line_id"],
+            "trunk_speed_status_quo_kmh": sq_speed,
+            "trunk_speed_proposed_kmh": prop_speed,
+            "trunk_speed_delta_kmh": (prop_speed - sq_speed) if (sq_speed is not None and prop_speed is not None) else None,
+            "coverage_fraction_status_quo": sq_s.coverage_weighted_fraction,
+            "coverage_fraction_proposed": prop_s.coverage_weighted_fraction,
+            "avg_door_to_door_min_status_quo": sq_s.avg_door_to_door_weighted_s / 60 if sq_s.avg_door_to_door_weighted_s is not None else None,
+            "avg_door_to_door_min_proposed": prop_s.avg_door_to_door_weighted_s / 60 if prop_s.avg_door_to_door_weighted_s is not None else None,
+        })
+    per_line_path = settings.TABLES_DIR / "simulation_per_line.csv"
+    pd.DataFrame(per_line_rows).to_csv(per_line_path, index=False)
+    print(f"Saved per-line simulation results -> {per_line_path}")
 
     comparison = citywide_comparison(per_line)
     print("\nCitywide status quo vs proposed (all simulated lines combined):")
     print(comparison.to_string())
 
     out_path = settings.PROCESSED_DIR / "citywide_simulation_comparison.csv"
-    comparison.to_csv(out_path)
-    print(f"\nSaved -> {out_path}")
+    try:
+        comparison.to_csv(out_path)
+        print(f"\nSaved -> {out_path}")
+    except PermissionError:
+        # Same read-only-for-pre-existing-files sandboxing note as
+        # optimization/run_mclp_all_lines.py's _write_geojson_or_skip.
+        print(f"\nNOTE: could not overwrite {out_path} in this environment "
+              f"(already exists from a prior real run) — leaving it as-is.")
 
 
 if __name__ == "__main__":

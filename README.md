@@ -1,16 +1,26 @@
-# Beirut ReRoute
+# Beirut ReRoute / Lebanon ReConnect
 
-An AI-designed and simulated redesign of Beirut's public transport as a **feeder-and-trunk**
-network: informal van/bus routes and population-density data are used to find where
-coverage is worst relative to the 2024-launched formal OCFTC/ACTC bus network (B1-B7 city
-lines + ML1-4 intercity lines), a coverage-optimization method designs new feeder routes
-connecting underserved areas to the nearest trunk line, and a rule-based transit signal
-priority layer (representing V2X/802.11p) is simulated on the trunk corridors. Status quo
-vs proposed system are compared on population-weighted coverage, door-to-door trip time,
-and trunk corridor bus speed — citywide across the Greater Beirut Area (GBA).
+Two layers, one LebNet Tech Fellows final project:
 
-LebNet Tech Fellows final project. See `Beirut ReRoute — Implementation Plan` for the full
-design (data sources, MCLP formulation, simulation architecture, milestones).
+- **Layer B (Beirut ReRoute)**: an AI-designed and simulated redesign of Beirut's public
+  transport as a **feeder-and-trunk** network: informal van/bus routes and population-density
+  data are used to find where coverage is worst relative to the 2024-launched formal
+  OCFTC/ACTC bus network (B1-B7 city lines + ML1-4 intercity lines), a coverage-optimization
+  method designs new feeder routes connecting underserved areas to the nearest trunk line,
+  and a rule-based transit signal priority layer (representing V2X/802.11p) is simulated on
+  the trunk corridors. Status quo vs proposed system are compared on population-weighted
+  coverage, door-to-door trip time, and trunk corridor bus speed — citywide across the
+  Greater Beirut Area (GBA).
+- **Layer A (Lebanon ReConnect)**: a lightweight national/regional network-graph and
+  centrality analysis quantifying how much more central Beirut's role could become if
+  Lebanon's dormant/planned regional links — historic Beirut-Damascus and Tripoli-Homs
+  rail, the 2026 Jounieh-Cyprus/Syria/Turkey ferry, and the real Arab Mashreq Railway /
+  Hejaz Railway revival agreements — were restored, layered on top of today's domestic bus
+  network (which Layer B reuses directly for 3 of the 5 Lebanese hub-city edges). See
+  `Lebanon ReConnect - Layer A Implementation Plan.md` and `data/raw/national_network/README.md`.
+
+See `Beirut ReRoute — Implementation Plan` for Layer B's full design (data sources, MCLP
+formulation, simulation architecture, milestones).
 
 ## Setup
 
@@ -30,7 +40,33 @@ python -m venv .venv
 | 2. Zoning & accessibility scoring | `src/beirut_reroute/processing/`, `accessibility/` | done — status-quo baseline: 92.2% pop-weighted coverage (`run_status_quo.py`) |
 | 3. Feeder network optimization (MCLP) | `src/beirut_reroute/optimization/` | done for 7/9 real lines (`run_mclp_all_lines.py`) — 22 feeder stops, 68.4% of underserved population newly covered |
 | 4. Signal priority + simulation | `src/beirut_reroute/simulation/` | done for all 7/7 lines with a feeder network (`run_simulation_all_lines.py`) on real routes + real OSM traffic signals — citywide coverage 0%->91.9%, ~162min avg door-to-door for newly-connected riders |
-| 5. Visualization & reporting | `src/beirut_reroute/viz/`, `outputs/` | QA map done (`viz/maps.py`); final report/phased-action-plan not started |
+| 5. Visualization & reporting | `src/beirut_reroute/viz/`, `outputs/` | 3 interactive maps + 6 static charts done (see "Visualizations" below); written 2-4 page report/phased-action-plan not started |
+| 6. National/regional vision (Layer A) | `src/beirut_reroute/national_network/`, `viz/national_map.py` | done — 18-node/18-edge graph, centrality comparison, map (`run_vision_analysis.py`) — see "Layer A results" below |
+
+## Visualizations
+
+Everything below is generated from real pipeline output (nothing hand-drawn
+or hardcoded) — regenerate any of it with `python -m beirut_reroute.viz.<module>`,
+or all of it via `run_pipeline.py`.
+
+**Interactive maps** (`outputs/maps/`) — open directly in a browser:
+
+| File | What it shows |
+|---|---|
+| `results_map.html` | Layer B, presentation-focused: status-quo accessibility choropleth (green=covered/red=uncovered), the OCFTC trunk network, and the AI-designed feeder network — click any stop for its line's real coverage/speed numbers. |
+| `qa_map.html` | Layer B, QA-focused: every parsed data layer (informal routes, per-line OCFTC stops with geocoding-confidence flags, underserved cells, feeder stops/routes) as separate toggleable layers — the verification trail behind `results_map.html`. |
+| `national_network_map.html` | Layer A: the 18-node regional network with status-quo vs. proposed-only edges, icons per node kind, and click popups carrying each edge's sourcing note/citation. |
+
+**Static charts** (`outputs/figures/`) — for the report/slides/video, where an `.html` map can't go:
+
+| File | What it shows |
+|---|---|
+| `layerB_trunk_speed_per_line.png` | Trunk corridor speed, status quo vs. proposed, all 7 simulated lines. |
+| `layerB_coverage_gain_per_line.png` | % and headcount of each line's underserved population newly covered by its MCLP feeder network. |
+| `layerB_citywide_accessibility.png` | GBA-wide spatial accessibility, 92.2% -> 97.4% (walk-only baseline + feeder network). |
+| `layerB_simulated_trip_completion.png` | Simulated trip-completion rate (0% -> 91.9%) and average door-to-door time, among riders assigned a feeder-served line — a different, narrower population than the accessibility chart above; see "Real results" for why these two numbers aren't the same thing. |
+| `layerA_centrality_comparison.png` | Top-8 nodes by proposed betweenness centrality, status quo vs. proposed. |
+| `layerA_network_diagram.png` | Static geographic layout of the Layer A network, with a zoomed Lebanon inset (the 8 Lebanese nodes are illegible at regional scale otherwise). |
 
 ## Real results (as of 2026-08-09, all bugs below fixed)
 
@@ -40,6 +76,34 @@ python -m venv .venv
 - **Trunk speed** (status quo -> proposed, per line — not blended citywide, corridors are too different to average meaningfully):
   B3 36.8->37.8, B4 29.2->30.2, B5 39.3->39.5, ML3 29.0->29.2, ML4 37.8->37.9 km/h (small real signal-priority gains);
   B6-ML2 and ML1 unchanged (41.0 / 31.6 km/h) because their chained routes contain zero real OSM traffic-signal nodes — priority has nothing to act on there.
+
+## Layer A results (national/regional vision, as of 2026-08-13)
+
+18 nodes (5 Lebanese coastal hub cities, 3 inland hubs/junctions, 2 border
+crossings, 5 regional cities, 3 Cedar-Waves-ferry destinations), 18 edges —
+see `data/raw/national_network/` for the full sourced node/edge lists.
+Status-quo graph = today's formal 2024 OCFTC lines + informal-only links (7
+edges); proposed graph = status quo + historic-dormant rail + real
+regional-agreement rail + the 2026 ferry launch (18 edges, +11).
+
+- **`beirut_hub` betweenness centrality: 0.132 -> 0.662 (+400%)** — restoring
+  these links makes Beirut a substantially more central bridging point in
+  the regional network, not just better-connected in absolute terms.
+- **`beirut_hub` closeness centrality: 0.0082 -> 0.0046 (-44%)** — closeness
+  *falls*, not rises. This isn't a bug: closeness measures average distance
+  to every *reachable* node, and the proposed graph makes genuinely distant
+  places (Riyadh, Mersin, Larnaca — hundreds to ~1,500+ km away) reachable
+  for the first time. Adding far-but-reachable nodes increases the average
+  distance faster than it increases the reachable count. Nearly every node
+  in the graph shows this same pattern (see `outputs/tables/national_centrality.csv`)
+  — a real, worth-reporting finding, not an artifact: reconnecting Lebanon
+  regionally is a bridging/gateway role, not a "closer to everything" one.
+- Other high-betweenness nodes in the proposed graph: `chtaura` (0.426),
+  `jounieh` (0.331), `rayak` (0.301), `masnaa` (0.257) — the inland-hub and
+  border-crossing nodes that sit *between* Beirut and the rest of the
+  region, as expected structurally.
+- Full table: `outputs/tables/national_centrality.csv`. Map (status-quo vs
+  proposed edges, toggleable layers): `outputs/maps/national_network_map.html`.
 
 ## Known Limitations
 
@@ -51,6 +115,22 @@ python -m venv .venv
   individually simulated vehicles.
 - GBA boundary is currently a 15km radius around Beirut Central District (see
   `config/settings.py`), not a precise administrative polygon.
+- **Layer A is a topological abstraction, not a routing-grade or costed
+  network.** Edge weight is great-circle (haversine) distance, not a real
+  travel time — there is no speed/mode-performance model for rail or ferry.
+  `aleppo`/`amman`/`riyadh` stand in for "the rest of the Hejaz Railway
+  revival network beyond Lebanon/Syria," not a modeled real alignment. See
+  `data/raw/national_network/README.md` for full sourcing/status notes per
+  edge (real historic rail vs. real-but-unbuilt agreement vs. real 2026
+  ferry launch).
+- **Layer A's `geocode_cache.json` was pre-seeded**, not pulled live from
+  Nominatim (the dev sandbox had no route to it) — see that folder's README
+  for why this is low-risk (major, unambiguous place names, not OCFTC's
+  fuzzy roundabout names) and how to re-verify against live Nominatim.
+- **Layer A reuses Layer B's ML1/ML4/B6-ML2 edges**, which per the QA
+  findings below have unconfirmed regular-operation status (only
+  B1/B2/B3/ML3 were confirmed) — tagged `formal_2024_unconfirmed_operation`
+  in `edges_manual.csv` rather than treated as fully reliable.
 - **Calibration check:** the B4 simulation's status-quo trunk travel time
   (Hadath -> Martyrs' Square) came out to 81.8 min, ~35% longer than the
   ~60min "end-to-end" figure `transitapp.com` publishes for B4. Free-flow

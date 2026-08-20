@@ -20,6 +20,7 @@ WORLDPOP_RAW_DIR = RAW_DIR / "worldpop"
 ADMIN_BOUNDARIES_DIR = RAW_DIR / "admin_boundaries"
 LEBANESE_BUS_ROUTES_DIR = RAW_DIR / "lebanese_bus_routes"
 OCFTC_DIGITIZED_DIR = RAW_DIR / "ocftc_digitized"
+NATIONAL_NETWORK_DIR = RAW_DIR / "national_network"
 
 OUTPUTS_DIR = PROJECT_ROOT / "outputs"
 MAPS_DIR = OUTPUTS_DIR / "maps"
@@ -30,7 +31,7 @@ REPORTS_DIR = OUTPUTS_DIR / "reports"
 for _d in (
     RAW_DIR, INTERIM_DIR, PROCESSED_DIR, OSM_RAW_DIR, WORLDPOP_RAW_DIR,
     ADMIN_BOUNDARIES_DIR, LEBANESE_BUS_ROUTES_DIR, OCFTC_DIGITIZED_DIR,
-    MAPS_DIR, FIGURES_DIR, TABLES_DIR, REPORTS_DIR,
+    NATIONAL_NETWORK_DIR, MAPS_DIR, FIGURES_DIR, TABLES_DIR, REPORTS_DIR,
 ):
     _d.mkdir(parents=True, exist_ok=True)
 
@@ -77,6 +78,18 @@ TRUNK_LINE_IDS = [
     "B1", "B2", "B3", "B4", "B5", "B6", "B7",   # Beirut city lines
     "ML1", "ML2", "ML3", "ML4",                  # intercity lines
 ]
+
+# ---------------------------------------------------------------------------
+# National/regional network (Layer A — see "Lebanon ReConnect - Layer A
+# Implementation Plan.md")
+# ---------------------------------------------------------------------------
+NATIONAL_NODES_CSV = NATIONAL_NETWORK_DIR / "nodes_manual.csv"
+NATIONAL_EDGES_CSV = NATIONAL_NETWORK_DIR / "edges_manual.csv"
+
+# Edge `status` values considered part of today's status-quo network. Every
+# other status (historic_dormant, proposed_revival, proposed_2026) is only
+# added in the "proposed" graph — see data/raw/national_network/README.md.
+STATUS_QUO_EDGE_STATUSES = {"formal_2024_unconfirmed_operation", "informal_only"}
 
 # ---------------------------------------------------------------------------
 # Congestion calibration

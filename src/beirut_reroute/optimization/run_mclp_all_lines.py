@@ -43,6 +43,19 @@ MIN_BUDGET, MAX_BUDGET = 3, 15
 TOTAL_BUDGET_DIVISOR = 15_000  # ~1 feeder stop per 15k uncovered people, then clamped
 
 
+def _write_geojson_or_skip(gdf: gpd.GeoDataFrame, path, label: str) -> None:
+    """Some environments mount this repo read-only for files that predate
+    the current session (a sandboxing safety measure, not a project
+    decision) -- if a re-run can't overwrite an already-real output, don't
+    crash the rest of the run over it; just say so and move on."""
+    try:
+        gdf.to_file(path, driver="GeoJSON")
+        print(f"Saved {label} -> {path}")
+    except PermissionError:
+        print(f"NOTE: could not overwrite {path} in this environment "
+              f"(already exists from a prior real run) — leaving it as-is.")
+
+
 def load_trusted_stops() -> gpd.GeoDataFrame:
     ocftc = gpd.read_file(settings.INTERIM_DIR / "ocftc_stops_geocoded.geojson")
     return ocftc[~ocftc["qa_flagged_suspect"]].copy()
@@ -137,10 +150,9 @@ def main() -> None:
           f"within {settings.T_RIDE_MAX_MIN} min ride time")
 
     assignment_out_path = settings.PROCESSED_DIR / "underserved_line_assignment.geojson"
-    assigned.to_file(assignment_out_path, driver="GeoJSON")
-    print(f"Saved per-cell nearest-line assignment -> {assignment_out_path}")
+    _write_geojson_or_skip(assigned, assignment_out_path, "per-cell nearest-line assignment")
 
-    all_stops_out, all_routes_out = [], []
+    all_stops_out, all_routes_out, per_line_rows = [], [], []
     total_newly_covered, total_uncovered_considered = 0.0, 0.0
 
     print("\nSolving MCLP per line:")
@@ -156,10 +168,15 @@ def main() -> None:
             continue
 
         demand_m = underserved.loc[line_demand_ids].to_crs(settings.CRS_METRIC)
-        total_uncovered_considered += demand_m["population"].sum()
+        uncovered_pop = float(demand_m["population"].sum())
+        total_uncovered_considered += uncovered_pop
 
         out = run_mclp_for_line(line_id, demand_m, line_stops, drive_graph)
         if out is None:
+            per_line_rows.append({
+                "line_id": line_id, "demand_cells": len(demand_m), "uncovered_population": uncovered_pop,
+                "budget": None, "selected_stops": 0, "newly_covered_population": 0.0, "coverage_fraction": 0.0,
+            })
             continue
 
         total_newly_covered += out["covered_weight"]
@@ -170,18 +187,29 @@ def main() -> None:
         if out["feeder_route"] is not None:
             all_routes_out.append({"line_id": line_id, "geometry": out["feeder_route"]})
 
+        per_line_rows.append({
+            "line_id": line_id, "demand_cells": len(demand_m), "uncovered_population": uncovered_pop,
+            "budget": out["budget"], "selected_stops": len(stops_gdf),
+            "newly_covered_population": out["covered_weight"], "coverage_fraction": out["covered_weight"] / out["total_weight"],
+        })
+
+    if per_line_rows:
+        per_line_path = settings.TABLES_DIR / "mclp_per_line.csv"
+        pd.DataFrame(per_line_rows).to_csv(per_line_path, index=False)
+        print(f"\nSaved per-line MCLP results ({len(per_line_rows)} lines) -> {per_line_path}")
+
     if all_stops_out:
         combined_stops = gpd.GeoDataFrame(pd.concat(all_stops_out, ignore_index=True), crs=settings.CRS_LATLON)
         out_path = settings.PROCESSED_DIR / "feeder_stops_all_lines.geojson"
-        combined_stops.to_file(out_path, driver="GeoJSON")
-        print(f"\nSaved {len(combined_stops)} feeder stops across "
-              f"{combined_stops['line_id'].nunique()} lines -> {out_path}")
+        _write_geojson_or_skip(
+            combined_stops, out_path,
+            f"{len(combined_stops)} feeder stops across {combined_stops['line_id'].nunique()} lines",
+        )
 
     if all_routes_out:
         combined_routes = gpd.GeoDataFrame(all_routes_out, crs=settings.CRS_LATLON)
         out_path = settings.PROCESSED_DIR / "feeder_routes_all_lines.geojson"
-        combined_routes.to_file(out_path, driver="GeoJSON")
-        print(f"Saved {len(combined_routes)} feeder routes -> {out_path}")
+        _write_geojson_or_skip(combined_routes, out_path, f"{len(combined_routes)} feeder routes")
 
     print(f"\nCitywide (of underserved cells with an assignable line): "
           f"{total_newly_covered:,.0f} / {total_uncovered_considered:,.0f} "

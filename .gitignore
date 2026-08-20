@@ -13,7 +13,12 @@ data/raw/ocftc_digitized/geocode_cache.json
 
 data/interim/
 data/processed/
-outputs/
+
+# outputs/ itself is tracked (maps/figures/tables are the actual submitted
+# results — a grader shouldn't have to rerun the full pipeline, which needs
+# live Nominatim + Python 3.14, just to see them). Only ignore large/derived
+# subfolders that aren't part of outputs/{maps,figures,tables}.
+outputs/**/*.log
 
 .ipynb_checkpoints/
 *.egg-info/
